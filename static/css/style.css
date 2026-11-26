@@ -1,22 +1,9 @@
-@font-face {
-    font-family: 'Vazirmatn';
-    src: url('../fonts/Vazirmatn-Regular.woff2') format('woff2');
-    font-weight: 400;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'Vazirmatn';
-    src: url('../fonts/Vazirmatn-Medium.woff2') format('woff2');
-    font-weight: 500;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'Vazirmatn';
-    src: url('../fonts/Vazirmatn-Bold.woff2') format('woff2');
-    font-weight: 700;
-    font-display: swap;
-}
+/* ---------- فونت ---------- */
+@font-face { font-family: 'Vazirmatn'; src: url('../fonts/Vazirmatn-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Vazirmatn'; src: url('../fonts/Vazirmatn-Medium.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'Vazirmatn'; src: url('../fonts/Vazirmatn-Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
 
+/* ---------- متغیرها: حالت روشن ---------- */
 :root {
     --brand: #a626a6;
     --brand-hover: #8b1f8b;
@@ -24,8 +11,23 @@
     --text: #222;
     --text-muted: #6b6b6b;
     --bg: #f2f3f5;
+    --card-bg: #ffffff;
     --card-border: #e5e7eb;
+    --input-bg: #ffffff;
     --radius: 12px;
+}
+
+/* ---------- متغیرها: حالت تاریک ---------- */
+html[data-theme="dark"] {
+    --brand: #c94bc9;
+    --brand-hover: #b03ab0;
+    --brand-light: #3a1c3a;
+    --text: #eaeaea;
+    --text-muted: #9ba0a8;
+    --bg: #14151a;
+    --card-bg: #1c1d24;
+    --card-border: #2a2c35;
+    --input-bg: #14151a;
 }
 
 * { box-sizing: border-box; }
@@ -35,274 +37,283 @@ body {
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
+    transition: background .2s ease, color .2s ease;
 }
 
-/* ---------- Header ---------- */
+/* ---------- سربرگ ---------- */
 .site-header {
-    background: #fff;
+    background: var(--card-bg);
     border-bottom: 1px solid var(--card-border);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    position: sticky; top: 0; z-index: 1000;
     box-shadow: 0 1px 3px rgba(0,0,0,.04);
 }
-.header-inner {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: .85rem 0;
-}
-.brand {
-    display: flex;
-    align-items: center;
-    gap: .6rem;
-    text-decoration: none;
-    color: var(--text);
-    flex-shrink: 0;
-}
+.header-inner { display: flex; align-items: center; gap: 1rem; padding: .75rem 0; flex-wrap: wrap; }
+
+.brand { display: flex; align-items: center; gap: .6rem; text-decoration: none; color: var(--text); flex-shrink: 0; }
 .brand-mark {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: var(--brand);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    font-weight: 700;
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--brand); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; font-weight: 700;
 }
+.brand-logo { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; }
 .brand-text strong { display: block; font-size: 1rem; }
 .brand-text small { font-size: .72rem; color: var(--text-muted); }
 
-.header-nav {
-    display: flex;
-    gap: .25rem;
-    margin-inline-start: auto;
-}
-.header-nav a {
-    color: var(--text);
-    text-decoration: none;
-    padding: .5rem .9rem;
-    border-radius: 8px;
-    font-size: .9rem;
-    font-weight: 500;
+/* دکمه‌های نوع معامله، بلافاصله بعد از برند */
+.deal-nav { display: flex; gap: .25rem; }
+.deal-nav a {
+    color: var(--text); text-decoration: none;
+    padding: .45rem .85rem; border-radius: 8px;
+    font-size: .9rem; font-weight: 500;
     transition: background .15s, color .15s;
 }
-.header-nav a:hover,
-.header-nav a.active {
-    background: var(--brand-light);
-    color: var(--brand);
-}
+.deal-nav a:hover, .deal-nav a.active { background: var(--brand-light); color: var(--brand); }
 
-/* ---------- Filter panel ---------- */
+/* سمت چپ: حالت تاریک + تماس */
+.header-actions { margin-inline-start: auto; display: flex; align-items: center; gap: .5rem; }
+.theme-toggle {
+    background: transparent; border: 1px solid var(--card-border);
+    border-radius: 8px; padding: .4rem .6rem; font-size: 1.1rem;
+    cursor: pointer; color: var(--text); line-height: 1;
+    transition: background .15s;
+}
+.theme-toggle:hover { background: var(--brand-light); }
+.theme-toggle .icon-sun { display: none; }
+html[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+html[data-theme="dark"] .theme-toggle .icon-sun { display: inline; }
+
+.header-contact-btn {
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: var(--brand); color: #fff;
+    text-decoration: none; padding: .5rem .9rem;
+    border-radius: 8px; font-size: .88rem; font-weight: 500;
+    transition: background .15s;
+}
+.header-contact-btn:hover { background: var(--brand-hover); color: #fff; }
+
+/* ---------- بنر ---------- */
+.banner {
+    position: relative; border-radius: var(--radius); overflow: hidden;
+    margin-bottom: 1.25rem;
+    min-height: 150px;
+    background: linear-gradient(135deg, var(--brand) 0%, #6b1f6b 100%);
+    display: flex; align-items: center;
+    box-shadow: 0 6px 24px rgba(166,38,166,.18);
+}
+.banner-bg {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    filter: brightness(.55);
+}
+.banner-content {
+    position: relative; z-index: 1;
+    padding: 1.5rem 2rem;
+    color: #fff; max-width: 640px;
+}
+.banner-content h2 { font-size: 1.4rem; font-weight: 700; margin: 0 0 .35rem; }
+.banner-content p { font-size: .95rem; margin: 0; opacity: .95; }
+
+/* ---------- پنل فیلتر ---------- */
 .filter-panel {
-    background: #fff;
+    background: var(--card-bg);
     border-radius: var(--radius);
     border: 1px solid var(--card-border);
-    padding: 1rem;
-    margin-bottom: 1.25rem;
+    padding: 1rem; margin-bottom: 1.25rem;
 }
-.filter-panel .form-label {
-    font-size: .8rem;
-    color: var(--text-muted);
-    margin-bottom: .3rem;
+.filter-panel .form-label { font-size: .8rem; color: var(--text-muted); margin-bottom: .3rem; }
+.filter-panel .form-control, .filter-panel .form-select {
+    border-radius: 8px; border: 1px solid var(--card-border);
+    font-size: .9rem; padding: .5rem .75rem;
+    background-color: var(--input-bg); color: var(--text);
 }
-.filter-panel .form-control,
-.filter-panel .form-select {
-    border-radius: 8px;
-    border: 1px solid var(--card-border);
-    font-size: .9rem;
-    padding: .5rem .75rem;
-    background-color: #fff;
-}
-.filter-panel .form-control:focus,
-.filter-panel .form-select:focus {
+.filter-panel .form-control:focus, .filter-panel .form-select:focus {
     border-color: var(--brand);
     box-shadow: 0 0 0 3px var(--brand-light);
+    background-color: var(--input-bg); color: var(--text);
 }
+
+/* ---------- دکمه‌ها ---------- */
 .btn-brand {
-    background: var(--brand);
-    border: none;
-    color: #fff;
-    border-radius: 8px;
-    padding: .55rem 1rem;
-    font-weight: 500;
-    font-size: .9rem;
-    cursor: pointer;
+    background: var(--brand); border: none; color: #fff;
+    border-radius: 8px; padding: .55rem 1rem;
+    font-weight: 500; font-size: .9rem; cursor: pointer;
+    text-decoration: none; display: inline-block; text-align: center;
 }
 .btn-brand:hover { background: var(--brand-hover); color: #fff; }
 .btn-ghost {
-    background: #f2f3f5;
-    color: var(--text);
-    border: 1px solid var(--card-border);
-    border-radius: 8px;
-    padding: .55rem 1rem;
-    font-size: .9rem;
-    text-decoration: none;
-    display: inline-block;
+    background: transparent; color: var(--text);
+    border: 1px solid var(--card-border); border-radius: 8px;
+    padding: .55rem 1rem; font-size: .9rem;
+    text-decoration: none; display: inline-block;
 }
-.btn-ghost:hover { background: #e9eaee; color: var(--text); }
+.btn-ghost:hover { background: var(--brand-light); color: var(--brand); border-color: var(--brand); }
 
-/* ---------- Property card ---------- */
+/* ---------- کارت ملک ---------- */
 .property-card {
-    background: #fff;
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-    overflow: hidden;
+    background: var(--card-bg); border: 1px solid var(--card-border);
+    border-radius: var(--radius); overflow: hidden;
     transition: transform .15s, box-shadow .15s;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+    height: 100%; display: flex; flex-direction: column;
 }
-.property-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0,0,0,.08);
-}
-.property-cover {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    background: #e9ecef;
-    display: block;
-}
-.property-cover-empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #9aa0a6;
-    font-size: .85rem;
-}
-.property-body {
-    padding: .85rem 1rem 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: .5rem;
-    flex: 1;
-}
-.property-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text);
-    margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-.property-meta {
-    font-size: .8rem;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    gap: .35rem;
-}
+.property-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+.property-cover { width: 100%; height: 200px; object-fit: cover; background: #e9ecef; display: block; }
+.property-cover-empty { display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: .85rem; }
+.property-body { padding: .85rem 1rem 1rem; display: flex; flex-direction: column; gap: .5rem; flex: 1; }
+.property-title { font-size: 1rem; font-weight: 600; color: var(--text); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.property-meta { font-size: .8rem; color: var(--text-muted); display: flex; align-items: center; gap: .35rem; }
 .property-meta .dot { opacity: .5; }
-.property-tags {
-    display: flex;
-    gap: .35rem;
-    flex-wrap: wrap;
-}
-.tag {
-    background: #f2f3f5;
-    color: #555;
-    border-radius: 6px;
-    padding: .15rem .5rem;
-    font-size: .75rem;
-    white-space: nowrap;
-}
-.badge-featured {
-    background: #fff4d4;
-    color: #8a6d00;
-    border: 1px solid #f4e0a0;
-}
-.property-price {
-    margin-top: auto;
-    display: flex;
-    flex-direction: column;
-    gap: .15rem;
-    color: var(--text);
-    font-size: .85rem;
-}
-.property-price strong {
-    color: var(--brand);
-    font-size: 1rem;
-}
+.property-tags { display: flex; gap: .35rem; flex-wrap: wrap; }
+.tag { background: var(--bg); color: var(--text-muted); border-radius: 6px; padding: .15rem .5rem; font-size: .75rem; white-space: nowrap; }
+.badge-featured { background: #fff4d4; color: #8a6d00; border: 1px solid #f4e0a0; }
+.property-price { margin-top: auto; display: flex; flex-direction: column; gap: .15rem; color: var(--text); font-size: .85rem; }
+.property-price strong { color: var(--brand); font-size: 1rem; }
 
-/* ---------- Detail page ---------- */
-.detail-card {
-    background: #fff;
+/* ---------- صفحهٔ جزئیات ---------- */
+.detail-info-card, .gallery, .contact-card {
+    background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: var(--radius);
     padding: 1.25rem;
     margin-bottom: 1rem;
 }
-.detail-title { font-size: 1.15rem; font-weight: 700; margin: 0; }
-.detail-location { color: var(--text-muted); font-size: .9rem; margin-top: .35rem; }
+.detail-title { font-size: 1.15rem; font-weight: 700; margin: 0; color: var(--text); }
+.detail-location { color: var(--text-muted); font-size: .88rem; margin-top: .35rem; }
 
-.detail-image {
-    width: 100%;
-    max-height: 480px;
-    object-fit: cover;
+.price-box {
+    background: var(--bg);
+    border-radius: 10px; padding: .85rem 1rem;
+    margin: 1rem 0 .75rem;
+    border: 1px solid var(--card-border);
 }
-.carousel-inner.rounded-overflow { border-radius: var(--radius); overflow: hidden; }
+.price-main { font-size: 1.3rem; font-weight: 700; color: var(--brand); }
+.price-main small { font-size: .85rem; color: var(--text-muted); font-weight: 400; }
+.price-row { font-size: .92rem; margin: .2rem 0; }
 
-.spec-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: .6rem;
-    margin-top: .5rem;
+.contact-btn {
+    display: block; text-align: center;
+    background: var(--brand); color: #fff;
+    text-decoration: none; padding: .75rem;
+    border-radius: 10px; font-weight: 600; font-size: .95rem;
 }
+.contact-btn:hover { background: var(--brand-hover); color: #fff; }
+
+.section-title {
+    font-size: .95rem; font-weight: 700;
+    color: var(--text); margin: 1.25rem 0 .6rem;
+    padding-bottom: .4rem; border-bottom: 2px solid var(--brand-light);
+}
+
+.spec-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem; }
 .spec-item {
-    background: #f2f3f5;
-    border-radius: 8px;
-    padding: .6rem .8rem;
-    display: flex;
-    justify-content: space-between;
-    font-size: .85rem;
+    background: var(--bg); border-radius: 8px; padding: .55rem .75rem;
+    display: flex; justify-content: space-between; font-size: .85rem;
 }
 .spec-item span { color: var(--text-muted); }
 .spec-item strong { color: var(--text); }
 
-.sticky-price {
-    position: sticky;
-    top: 90px;
-    background: #fff;
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-    padding: 1.25rem;
-}
-.sticky-price .label { color: var(--text-muted); font-size: .85rem; margin-bottom: .4rem; }
-.sticky-price .big { font-size: 1.4rem; font-weight: 700; color: var(--brand); }
-.sticky-price .unit { color: var(--text-muted); font-size: .85rem; }
-.sticky-price .contact-btn {
-    display: block;
-    text-align: center;
-    background: var(--brand);
-    color: #fff;
-    text-decoration: none;
-    padding: .7rem;
-    border-radius: 8px;
-    font-weight: 600;
-    margin-top: 1rem;
-}
-.sticky-price .contact-btn:hover { background: var(--brand-hover); color: #fff; }
+.detail-description { line-height: 1.9; color: var(--text); }
 
-/* ---------- Footer ---------- */
-.site-footer {
-    text-align: center;
-    padding: 2rem 1rem;
-    color: var(--text-muted);
-    font-size: .85rem;
-    margin-top: 2rem;
+/* گالری */
+.gallery { padding: 0; overflow: hidden; }
+.gallery-main { position: relative; aspect-ratio: 16 / 10; background: #000; }
+.gallery-item { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.gallery-item.active { opacity: 1; pointer-events: auto; }
+.gallery-item img,
+.gallery-item video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.video-link-wrap { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; }
+.video-open { color: #fff; font-size: 1.1rem; text-decoration: none; padding: 1rem 1.5rem; border: 1px solid #fff; border-radius: 8px; }
+
+.gallery-thumbs {
+    display: flex; gap: .35rem;
+    padding: .5rem; overflow-x: auto;
+    background: var(--card-bg);
     border-top: 1px solid var(--card-border);
-    background: #fff;
+}
+.gallery-thumb {
+    flex: 0 0 84px; height: 62px;
+    border-radius: 6px; overflow: hidden;
+    border: 2px solid transparent; cursor: pointer;
+    background: #000; padding: 0;
+    position: relative; opacity: .6;
+    transition: opacity .15s, border-color .15s;
+}
+.gallery-thumb:hover { opacity: .85; }
+.gallery-thumb.active { opacity: 1; border-color: var(--brand); }
+.gallery-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb-video-icon {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1.3rem; background: rgba(0,0,0,.5);
+    pointer-events: none;
+}
+.thumb-video-label { position: absolute; bottom: 4px; left: 4px; right: 4px; color: #fff; font-size: .65rem; text-align: center; background: rgba(0,0,0,.6); padding: 1px; border-radius: 4px; }
+
+.gallery-empty {
+    aspect-ratio: 16 / 10;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); background: var(--bg);
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 576px) {
-    .header-nav a { padding: .4rem .6rem; font-size: .82rem; }
+/* ---------- صفحهٔ تماس ---------- */
+.page-heading { margin-bottom: 1.5rem; }
+.page-heading h1 { font-size: 1.5rem; font-weight: 700; margin: 0 0 .35rem; }
+
+.contact-list { display: flex; flex-direction: column; gap: .6rem; }
+.contact-item {
+    display: flex; align-items: center; gap: .85rem;
+    background: var(--bg); border-radius: 10px;
+    padding: .7rem .9rem;
+    border: 1px solid var(--card-border);
+}
+.contact-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--brand-light); color: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; flex-shrink: 0;
+}
+.contact-body { display: flex; flex-direction: column; min-width: 0; }
+.contact-label { font-size: .75rem; color: var(--text-muted); }
+.contact-value { font-size: .92rem; color: var(--text); text-decoration: none; word-break: break-word; }
+a.contact-value:hover { color: var(--brand); }
+
+.social-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: .5rem; }
+.social-btn {
+    display: flex; align-items: center; gap: .5rem;
+    background: var(--bg); border: 1px solid var(--card-border);
+    border-radius: 10px; padding: .6rem .8rem;
+    text-decoration: none; color: var(--text);
+    transition: border-color .15s, background .15s;
+}
+.social-btn:hover { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
+.social-icon { font-size: 1.15rem; }
+.social-name { font-size: .88rem; }
+
+.sticky-form { position: sticky; top: 90px; }
+.sticky-form .form-control {
+    background: var(--input-bg); color: var(--text);
+    border: 1px solid var(--card-border);
+}
+.sticky-form .form-control:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-light); }
+
+/* ---------- فوتر ---------- */
+.site-footer {
+    text-align: center; padding: 2rem 1rem;
+    color: var(--text-muted); font-size: .85rem;
+    margin-top: 2rem; border-top: 1px solid var(--card-border);
+    background: var(--card-bg);
+}
+
+/* ---------- ریسپانسیو ---------- */
+@media (max-width: 768px) {
+    .header-inner { gap: .6rem; }
+    .deal-nav a { padding: .35rem .6rem; font-size: .82rem; }
     .brand-text small { display: none; }
+    .header-contact-btn .btn-label { display: none; }
     .property-cover { height: 180px; }
-    .detail-image { max-height: 280px; }
+    .banner-content { padding: 1.1rem 1.2rem; }
+    .banner-content h2 { font-size: 1.15rem; }
+    .banner-content p { font-size: .85rem; }
+    .spec-grid { grid-template-columns: 1fr; }
+    .sticky-form { position: static; }
+    .detail-title { font-size: 1.05rem; }
 }

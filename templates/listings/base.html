@@ -4,40 +4,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}املاک نمونه{% endblock %}</title>
+    <title>{% block title %}{{ site_settings.site_name }}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/bootstrap.rtl.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script>
+        // قبل از رندر، تم را اعمال کن تا پرش نداشته باشیم
+        (function () {
+            try {
+                var t = localStorage.getItem('theme');
+                if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+            } catch (e) {}
+        })();
+    </script>
 </head>
 <body>
 
 <header class="site-header">
     <div class="container">
         <div class="header-inner">
+
             <a href="{% url 'listings:list' %}" class="brand">
-                <span class="brand-mark">ا</span>
+                {% if site_settings.logo %}
+                    <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" class="brand-logo">
+                {% else %}
+                    <span class="brand-mark">{{ site_settings.logo_letter }}</span>
+                {% endif %}
                 <span class="brand-text">
-                    <strong>املاک نمونه</strong>
-                    <small>خرید، فروش، رهن و اجاره</small>
+                    <strong>{{ site_settings.site_name }}</strong>
+                    {% if site_settings.site_description %}<small>{{ site_settings.site_description }}</small>{% endif %}
                 </span>
             </a>
-            <nav class="header-nav">
+
+            <nav class="deal-nav">
                 <a href="{% url 'listings:list' %}" class="{% if not request.GET.deal_type %}active{% endif %}">همه</a>
                 <a href="{% url 'listings:list' %}?deal_type=sale" class="{% if request.GET.deal_type == 'sale' %}active{% endif %}">فروش</a>
                 <a href="{% url 'listings:list' %}?deal_type=rent" class="{% if request.GET.deal_type == 'rent' %}active{% endif %}">اجاره</a>
                 <a href="{% url 'listings:list' %}?deal_type=mortgage" class="{% if request.GET.deal_type == 'mortgage' %}active{% endif %}">رهن</a>
             </nav>
+
+            <div class="header-actions">
+                <button type="button" class="theme-toggle" title="تغییر حالت نمایش" aria-label="تغییر حالت نمایش">
+                    <span class="icon-moon">🌙</span>
+                    <span class="icon-sun">☀️</span>
+                </button>
+                <a href="{% url 'listings:contact' %}" class="header-contact-btn">
+                    <span>📞</span> <span class="btn-label">تماس</span>
+                </a>
+            </div>
+
         </div>
     </div>
 </header>
 
 <main class="container py-4">
+    {% if messages %}
+        {% for m in messages %}
+            <div class="alert alert-{{ m.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ m }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="بستن"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
     {% block content %}{% endblock %}
 </main>
 
 <footer class="site-footer">
-    © املاک نمونه — تمامی حقوق محفوظ است.
+    © {{ site_settings.site_name }} — تمامی حقوق محفوظ است.
 </footer>
 
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>

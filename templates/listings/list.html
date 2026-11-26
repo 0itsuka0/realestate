@@ -1,14 +1,26 @@
 {% extends "listings/base.html" %}
 {% load humanize %}
-{% block title %}فهرست فایل‌ها{% endblock %}
+{% block title %}فهرست فایل‌ها — {{ site_settings.site_name }}{% endblock %}
 
 {% block content %}
+
+{% if site_settings.banner_image or site_settings.banner_title %}
+<section class="banner">
+    {% if site_settings.banner_image %}
+    <div class="banner-bg" style="background-image: url('{{ site_settings.banner_image.url }}');"></div>
+    {% endif %}
+    <div class="banner-content">
+        {% if site_settings.banner_title %}<h2>{{ site_settings.banner_title }}</h2>{% endif %}
+        {% if site_settings.banner_subtitle %}<p>{{ site_settings.banner_subtitle }}</p>{% endif %}
+    </div>
+</section>
+{% endif %}
+
 <section class="filter-panel">
     <form method="get" class="row g-2 align-items-end">
         <div class="col-12 col-md-4">
             <label class="form-label">جست‌وجو</label>
-            <input type="text" name="q" value="{{ filters.q|default:'' }}"
-                   class="form-control" placeholder="عنوان، شهر، محله...">
+            <input type="text" name="q" value="{{ filters.q|default:'' }}" class="form-control" placeholder="عنوان، شهر، محله...">
         </div>
         <div class="col-6 col-md-2">
             <label class="form-label">نوع معامله</label>
@@ -30,8 +42,7 @@
         </div>
         <div class="col-6 col-md-2">
             <label class="form-label">شهر</label>
-            <input type="text" name="city" value="{{ filters.city|default:'' }}"
-                   class="form-control" placeholder="مثلاً تهران">
+            <input type="text" name="city" value="{{ filters.city|default:'' }}" class="form-control" placeholder="مثلاً تهران">
         </div>
         <div class="col-6 col-md-2 d-flex gap-2">
             <button type="submit" class="btn-brand flex-fill">جست‌وجو</button>

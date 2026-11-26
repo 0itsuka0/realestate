@@ -1,0 +1,96 @@
+{% extends "listings/base.html" %}
+{% block title %}اطلاعات تماس — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <h1>اطلاعات تماس</h1>
+    <p class="text-muted">{{ site_settings.site_name }} — {{ site_settings.site_description }}</p>
+</div>
+
+<div class="row g-3">
+
+    {# سمت راست: دربارهٔ ما + اطلاعات تماس + شبکه‌ها #}
+    <div class="col-12 col-lg-7">
+
+        {% if site_settings.about_text %}
+        <div class="contact-card">
+            <h2 class="section-title">دربارهٔ ما</h2>
+            <p class="detail-description">{{ site_settings.about_text|linebreaksbr }}</p>
+        </div>
+        {% endif %}
+
+        {% if contact_items %}
+        <div class="contact-card">
+            <h2 class="section-title">اطلاعات تماس</h2>
+            <div class="contact-list">
+                {% for item in contact_items %}
+                <div class="contact-item">
+                    <div class="contact-icon">{{ item.icon }}</div>
+                    <div class="contact-body">
+                        <span class="contact-label">{{ item.label }}</span>
+                        {% if item.link %}
+                            <a href="{{ item.link }}" class="contact-value">{{ item.value }}</a>
+                        {% else %}
+                            <span class="contact-value">{{ item.value }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if social_links %}
+        <div class="contact-card">
+            <h2 class="section-title">شبکه‌های اجتماعی</h2>
+            <div class="social-grid">
+                {% for s in social_links %}
+                <a href="{{ s.url }}" target="_blank" rel="noopener" class="social-btn" title="{{ s.get_platform_display }}">
+                    <span class="social-icon">{{ s.icon }}</span>
+                    <span class="social-name">{{ s.get_platform_display }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    {# سمت چپ: فرم تیکت #}
+    <div class="col-12 col-lg-5">
+        <div class="contact-card sticky-form">
+            <h2 class="section-title">ارسال پیام / تیکت</h2>
+            <p class="text-muted small">پیام شما مستقیماً به مدیران ارسال می‌شود.</p>
+
+            <form method="post" action="{% url 'listings:contact' %}">
+                {% csrf_token %}
+                <input type="text" name="website" class="d-none" tabindex="-1" autocomplete="off">
+
+                <div class="mb-3">
+                    <label class="form-label">نام و نام خانوادگی <span class="text-danger">*</span></label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">شماره تماس <span class="text-danger">*</span></label>
+                    <input type="tel" name="phone" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">ایمیل (اختیاری)</label>
+                    <input type="email" name="email" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">موضوع <span class="text-danger">*</span></label>
+                    <input type="text" name="subject" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">پیام <span class="text-danger">*</span></label>
+                    <textarea name="message" class="form-control" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn-brand w-100">ارسال پیام</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
