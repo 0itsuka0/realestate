@@ -1,0 +1,97 @@
+{% extends "listings/base.html" %}
+{% load humanize %}
+{% block title %}{{ property.title }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'listings:list' %}" class="btn-ghost mb-3 d-inline-block">→ بازگشت به فهرست</a>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-8">
+        <div class="detail-card">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                <h1 class="detail-title">{{ property.title }}</h1>
+                {% if property.is_featured %}<span class="tag badge-featured">ویژه</span>{% endif %}
+            </div>
+            <div class="detail-location">
+                {{ property.province }} — {{ property.city }}
+                {% if property.neighborhood %} — {{ property.neighborhood }}{% endif %}
+                {% if property.address %}<br><small>{{ property.address }}</small>{% endif %}
+            </div>
+
+            {% if property.images.all %}
+            <div id="gallery" class="carousel slide mt-3" data-bs-ride="carousel">
+                <div class="carousel-inner rounded-overflow">
+                    {% for img in property.images.all %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ img.image.url }}" class="detail-image d-block w-100" alt="{{ img.caption }}">
+                        {% if img.caption %}<div class="carousel-caption d-none d-md-block"><small>{{ img.caption }}</small></div>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#gallery" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#gallery" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+            </div>
+            {% endif %}
+
+            <h2 class="h6 mt-4 mb-2">مشخصات</h2>
+            <div class="spec-grid">
+                <div class="spec-item"><span>نوع معامله</span><strong>{{ property.get_deal_type_display }}</strong></div>
+                <div class="spec-item"><span>نوع ملک</span><strong>{{ property.get_property_type_display }}</strong></div>
+                <div class="spec-item"><span>متراژ</span><strong>{{ property.area }} متر</strong></div>
+                <div class="spec-item"><span>خواب</span><strong>{{ property.bedrooms }}</strong></div>
+                <div class="spec-item"><span>سرویس</span><strong>{{ property.bathrooms }}</strong></div>
+                {% if property.year_built %}<div class="spec-item"><span>سال ساخت</span><strong>{{ property.year_built }}</strong></div>{% endif %}
+                {% if property.floor is not None %}<div class="spec-item"><span>طبقه</span><strong>{{ property.floor }}</strong></div>{% endif %}
+                {% if property.total_floors %}<div class="spec-item"><span>کل طبقات</span><strong>{{ property.total_floors }}</strong></div>{% endif %}
+            </div>
+
+            {% if property.description %}
+            <h2 class="h6 mt-4 mb-2">توضیحات</h2>
+            <p style="line-height:1.9;">{{ property.description|linebreaksbr }}</p>
+            {% endif %}
+
+            {% if property.videos.all %}
+            <h2 class="h6 mt-4 mb-2">ویدیوها</h2>
+            {% for v in property.videos.all %}
+                {% if v.video_file %}
+                    <video controls class="w-100 mb-2" style="border-radius:12px;">
+                        <source src="{{ v.video_file.url }}">
+                    </video>
+                {% elif v.video_url %}
+                    <a href="{{ v.video_url }}" target="_blank" rel="noopener" class="btn-ghost mb-2 d-inline-block">
+                        ▶ {{ v.title|default:"مشاهده ویدیو" }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="sticky-price">
+            <div class="label">قیمت</div>
+            {% if property.deal_type == 'sale' and property.price %}
+                <div class="big">{{ property.price|intcomma }}</div>
+                <div class="unit">تومان</div>
+            {% elif property.deal_type == 'rent' %}
+                {% if property.deposit %}<div>ودیعه: <strong>{{ property.deposit|intcomma }}</strong> تومان</div>{% endif %}
+                {% if property.rent %}<div>اجاره: <strong>{{ property.rent|intcomma }}</strong> تومان</div>{% endif %}
+            {% elif property.deal_type == 'mortgage' and property.deposit %}
+                <div class="big">{{ property.deposit|intcomma }}</div>
+                <div class="unit">تومان رهن</div>
+            {% else %}
+                <div class="text-muted">قیمت ثبت نشده</div>
+            {% endif %}
+
+            {% if property.phone %}
+            <a href="tel:{{ property.phone }}" class="contact-btn">📞 تماس با مشاور</a>
+            <div class="text-center mt-2 text-muted small">{{ property.phone }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

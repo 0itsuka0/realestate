@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}املاک نمونه{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.rtl.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="container">
+        <div class="header-inner">
+            <a href="{% url 'listings:list' %}" class="brand">
+                <span class="brand-mark">ا</span>
+                <span class="brand-text">
+                    <strong>املاک نمونه</strong>
+                    <small>خرید، فروش، رهن و اجاره</small>
+                </span>
+            </a>
+            <nav class="header-nav">
+                <a href="{% url 'listings:list' %}" class="{% if not request.GET.deal_type %}active{% endif %}">همه</a>
+                <a href="{% url 'listings:list' %}?deal_type=sale" class="{% if request.GET.deal_type == 'sale' %}active{% endif %}">فروش</a>
+                <a href="{% url 'listings:list' %}?deal_type=rent" class="{% if request.GET.deal_type == 'rent' %}active{% endif %}">اجاره</a>
+                <a href="{% url 'listings:list' %}?deal_type=mortgage" class="{% if request.GET.deal_type == 'mortgage' %}active{% endif %}">رهن</a>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="container py-4">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+    © املاک نمونه — تمامی حقوق محفوظ است.
+</footer>
+
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

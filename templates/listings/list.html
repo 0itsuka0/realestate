@@ -1,0 +1,92 @@
+{% extends "listings/base.html" %}
+{% load humanize %}
+{% block title %}فهرست فایل‌ها{% endblock %}
+
+{% block content %}
+<section class="filter-panel">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+            <label class="form-label">جست‌وجو</label>
+            <input type="text" name="q" value="{{ filters.q|default:'' }}"
+                   class="form-control" placeholder="عنوان، شهر، محله...">
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label">نوع معامله</label>
+            <select name="deal_type" class="form-select">
+                <option value="">همه</option>
+                {% for value, label in deal_choices %}
+                <option value="{{ value }}" {% if filters.deal_type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label">نوع ملک</label>
+            <select name="property_type" class="form-select">
+                <option value="">همه</option>
+                {% for value, label in property_choices %}
+                <option value="{{ value }}" {% if filters.property_type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label">شهر</label>
+            <input type="text" name="city" value="{{ filters.city|default:'' }}"
+                   class="form-control" placeholder="مثلاً تهران">
+        </div>
+        <div class="col-6 col-md-2 d-flex gap-2">
+            <button type="submit" class="btn-brand flex-fill">جست‌وجو</button>
+            <a href="{% url 'listings:list' %}" class="btn-ghost">پاک‌سازی</a>
+        </div>
+    </form>
+</section>
+
+<p class="text-muted small mb-3">{{ count }} فایل یافت شد.</p>
+
+{% if properties %}
+<div class="row g-3">
+    {% for prop in properties %}
+    <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+        <a href="{% url 'listings:detail' prop.pk %}" class="text-decoration-none text-reset d-block h-100">
+            <div class="property-card">
+                {% if prop.main_image %}
+                <img src="{{ prop.main_image.url }}" class="property-cover" alt="{{ prop.title }}">
+                {% else %}
+                <div class="property-cover property-cover-empty">بدون تصویر</div>
+                {% endif %}
+                <div class="property-body">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                        <h5 class="property-title">{{ prop.title }}</h5>
+                        {% if prop.is_featured %}<span class="tag badge-featured">ویژه</span>{% endif %}
+                    </div>
+                    <div class="property-meta">
+                        <span>{{ prop.city }}</span>
+                        {% if prop.neighborhood %}<span class="dot">•</span><span>{{ prop.neighborhood }}</span>{% endif %}
+                    </div>
+                    <div class="property-tags">
+                        <span class="tag">{{ prop.get_deal_type_display }}</span>
+                        <span class="tag">{{ prop.get_property_type_display }}</span>
+                        <span class="tag">{{ prop.area }} متر</span>
+                        {% if prop.bedrooms %}<span class="tag">{{ prop.bedrooms }} خواب</span>{% endif %}
+                    </div>
+                    <div class="property-price">
+                        {% if prop.deal_type == 'sale' and prop.price %}
+                            <strong>{{ prop.price|intcomma }} تومان</strong>
+                        {% elif prop.deal_type == 'rent' %}
+                            {% if prop.deposit %}<span>ودیعه: <strong>{{ prop.deposit|intcomma }}</strong></span>{% endif %}
+                            {% if prop.rent %}<span>اجاره: <strong>{{ prop.rent|intcomma }}</strong></span>{% endif %}
+                        {% elif prop.deal_type == 'mortgage' and prop.deposit %}
+                            <span>رهن: <strong>{{ prop.deposit|intcomma }}</strong> تومان</span>
+                        {% else %}
+                            <span class="text-muted">قیمت ثبت نشده</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-light text-center border">هیچ فایلی با این فیلترها یافت نشد.</div>
+{% endif %}
+{% endblock %}
