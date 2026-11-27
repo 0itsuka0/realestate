@@ -231,7 +231,7 @@ class SessionAdmin(admin.ModelAdmin):
     def has_add_permission(self, request): return False
     def has_change_permission(self, request, obj=None): return False
 
-    @admin.action(description='حذف جلسات منقضی‌شده')
+    @admin.action(description='حذف جلسات منقضی‌شده', permissions=['delete'])
     def delete_expired_sessions(self, request, queryset):
         deleted, _ = Session.objects.filter(expire_date__lt=timezone.now()).delete()
         self.message_user(request, f'{deleted} جلسهٔ منقضی حذف شد.', level='success')
