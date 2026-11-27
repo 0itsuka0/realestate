@@ -10,9 +10,14 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 
+from .admin_permissions import (
+    SECTION_PERMISSION_FIELDS,
+    permissions_for_sections,
+)
+from .forms import ManagerChangeForm, ManagerCreationForm
 from .models import (
     Property, PropertyImage, PropertyVideo,
-    UserProfile, SiteSettings, ContactItem, SocialLink, Ticket, ContactPage,
+    SiteSettings, ContactItem, SocialLink, Ticket, ContactPage,
 )
 
 # ---------- حذف کامل گروه‌ها ----------
@@ -20,30 +25,6 @@ try:
     admin.site.unregister(Group)
 except admin.sites.NotRegistered:
     pass
-
-
-class RolePermissionMixin:
-    allowed_roles = ()
-
-    def _allowed(self, request):
-        if not request.user.is_authenticated:
-            return False
-        if request.user.is_superuser:
-            return True
-        try:
-            profile, _ = UserProfile.objects.get_or_create(user=request.user)
-            return (
-                profile.role == UserProfile.ROLE_SUPER
-                or profile.role in self.allowed_roles
-            )
-        except Exception:
-            return False
-
-    def has_module_permission(self, request): return self._allowed(request)
-    def has_view_permission(self, request, obj=None): return self._allowed(request)
-    def has_add_permission(self, request): return self._allowed(request)
-    def has_change_permission(self, request, obj=None): return self._allowed(request)
-    def has_delete_permission(self, request, obj=None): return self._allowed(request)
 
 
 class AdminCSSMixin:
@@ -65,8 +46,7 @@ class PropertyVideoInline(admin.TabularInline):
 
 
 @admin.register(Property)
-class PropertyAdmin(RolePermissionMixin, admin.ModelAdmin):
-    allowed_roles = (UserProfile.ROLE_PROPERTY,)
+class PropertyAdmin(admin.ModelAdmin):
     list_display = (
         'title', 'deal_type', 'usage_type', 'property_type', 'city',
         'status', 'is_featured', 'created_at',
@@ -97,8 +77,7 @@ class PropertyAdmin(RolePermissionMixin, admin.ModelAdmin):
 
 # ---------- تنظیمات سایت ----------
 @admin.register(SiteSettings)
-class SiteSettingsAdmin(RolePermissionMixin, admin.ModelAdmin):
-    allowed_roles = (UserProfile.ROLE_CONTENT,)
+class SiteSettingsAdmin(admin.ModelAdmin):
     fieldsets = (
         ('برندینگ', {'fields': ('site_name', 'site_description', 'logo')}),
         ('بنر صفحهٔ اصلی', {'fields': ('banner_image', 'banner_title', 'banner_subtitle')}),
@@ -127,8 +106,7 @@ class SocialLinkInline(admin.TabularInline):
 
 
 @admin.register(ContactPage)
-class ContactPageAdmin(RolePermissionMixin, admin.ModelAdmin):
-    allowed_roles = (UserProfile.ROLE_CONTENT,)
+class ContactPageAdmin(admin.ModelAdmin):
     inlines = [ContactItemInline, SocialLinkInline]
     readonly_fields = ('updated_at',)
     fields = ('updated_at',)
@@ -146,8 +124,7 @@ class ContactPageAdmin(RolePermissionMixin, admin.ModelAdmin):
 
 # ---------- تیکت‌ها ----------
 @admin.register(Ticket)
-class TicketAdmin(RolePermissionMixin, AdminCSSMixin, admin.ModelAdmin):
-    allowed_roles = (UserProfile.ROLE_TICKET,)
+class TicketAdmin(AdminCSSMixin, admin.ModelAdmin):
 
     list_display = ('view_button', 'subject', 'name', 'phone', 'status_badge', 'created_at')
     list_display_links = None
@@ -192,11 +169,10 @@ class LogEntryAdmin(AdminCSSMixin, admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         return [f.name for f in LogEntry._meta.fields]
 
-    def has_module_permission(self, request): return request.user.is_superuser
-    def has_view_permission(self, request, obj=None): return request.user.is_superuser
+    # Log entries are read-only; deletion is limited to users with the
+    # standard admin.delete_logentry permission.
     def has_add_permission(self, request): return False
     def has_change_permission(self, request, obj=None): return False
-    def has_delete_permission(self, request, obj=None): return request.user.is_superuser
 
     def log_deletion(self, request, object, object_repr): return
     def log_addition(self, request, object, object_repr): return
@@ -251,11 +227,9 @@ class SessionAdmin(admin.ModelAdmin):
     def get_exclude(self, request, obj=None):
         return ('session_data',)
 
-    def has_module_permission(self, request): return request.user.is_superuser
-    def has_view_permission(self, request, obj=None): return request.user.is_superuser
+    # Sessions are read-only; the section checkbox grants view/delete access.
     def has_add_permission(self, request): return False
     def has_change_permission(self, request, obj=None): return False
-    def has_delete_permission(self, request, obj=None): return request.user.is_superuser
 
     @admin.action(description='حذف جلسات منقضی‌شده')
     def delete_expired_sessions(self, request, queryset):
@@ -267,44 +241,74 @@ class SessionAdmin(admin.ModelAdmin):
         return obj.expire_date < timezone.now()
 
 
-# ---------- کاربران ----------
-class UserProfileInline(admin.StackedInline):
-    model = UserProfile
-    can_delete = False
-    max_num = 1
-    fk_name = 'user'
-    verbose_name_plural = 'نقش و دسترسی'
-
-
+# ---------- مدیریت مدیران ----------
 class UserAdmin(BaseUserAdmin):
-    inlines = (UserProfileInline,)
+    """Manage non-superuser staff accounts; only superusers may enter here."""
 
-    def get_inlines(self, request, obj=None):
-        # The post_save signal creates a profile when the user is first saved.
-        # Do not show an empty profile inline on the add form, or it may try to
-        # insert the same one again. Ensure legacy users have a profile before
-        # displaying the inline on their change form.
-        if obj is None:
-            return ()
-        UserProfile.objects.get_or_create(user=obj)
-        return super().get_inlines(request, obj)
-    list_display = ('username', 'email', 'role_display', 'is_active', 'is_staff', 'is_superuser')
-    list_filter = ('is_active', 'is_staff', 'is_superuser')
+    form = ManagerChangeForm
+    add_form = ManagerCreationForm
+    fieldsets = (
+        (None, {"fields": ("username", "password")}),
+        ("دسترسی به بخش‌ها", {"fields": SECTION_PERMISSION_FIELDS}),
+    )
+    add_fieldsets = (
+        (None, {
+            "classes": ("wide",),
+            "fields": ("username", "password1", "password2"),
+        }),
+        ("دسترسی به بخش‌ها", {"fields": SECTION_PERMISSION_FIELDS}),
+    )
+    readonly_fields = ("password",)
+    list_display = ("username", "is_active")
+    list_display_links = ("username",)
+    search_fields = ("username",)
+    ordering = ("username",)
+    list_filter = ()
 
-    def role_display(self, obj):
-        if obj.is_superuser:
-            return 'مدیر ارشد (Superuser)'
-        try:
-            return obj.profile.get_role_display()
-        except Exception:
-            return '—'
-    role_display.short_description = 'نقش'
+    def get_queryset(self, request):
+        # This area lists manager accounts only, never superuser/root accounts
+        # or ordinary public users.
+        return super().get_queryset(request).filter(
+            is_staff=True,
+            is_superuser=False,
+        )
 
-    def has_module_permission(self, request): return request.user.is_superuser
-    def has_view_permission(self, request, obj=None): return request.user.is_superuser
-    def has_add_permission(self, request): return request.user.is_superuser
-    def has_change_permission(self, request, obj=None): return request.user.is_superuser
-    def has_delete_permission(self, request, obj=None): return request.user.is_superuser
+    def save_model(self, request, obj, form, change):
+        # Every account created here is an admin staff account, never a superuser.
+        obj.is_staff = True
+        obj.is_superuser = False
+        super().save_model(request, obj, form, change)
+
+        # The checkboxes are the only source of manager permissions.
+        # Remove any legacy/group-based grants to avoid hidden extra access.
+        obj.groups.clear()
+        obj.user_permissions.set(
+            permissions_for_sections({
+                field_name: form.cleaned_data.get(field_name, False)
+                for field_name in SECTION_PERMISSION_FIELDS
+            })
+        )
+
+    def has_module_permission(self, request):
+        return request.user.is_superuser
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser and (
+            obj is None or not obj.is_superuser
+        )
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser and (
+            obj is None or not obj.is_superuser
+        )
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser and (
+            obj is None or not obj.is_superuser
+        )
 
 
 try:
@@ -314,65 +318,81 @@ except admin.sites.NotRegistered:
 admin.site.register(User, UserAdmin)
 
 
-# ---------- سازمان‌دهی منوی ادمین ----------
+# ---------- منوی بخش‌بندی‌شده بر اساس مجوز واقعی ----------
 _original_get_app_list = admin.site.get_app_list
+
+_ADMIN_MENU_GROUPS = (
+    ("مدیریت مدیران", ("User",)),
+    ("فایل‌های ملکی", ("Property",)),
+    ("اطلاعات تماس و شبکه‌های اجتماعی", ("ContactPage",)),
+    ("تیکت‌ها", ("Ticket",)),
+    ("تنظیمات سایت", ("SiteSettings",)),
+    ("لاگ‌های سیستم", ("LogEntry",)),
+    ("مدیریت نشست‌ها", ("Session",)),
+)
+
+_ADMIN_MODEL_LABELS = {
+    "User": "مدیران",
+    "Property": "فایل‌های ملکی",
+    "ContactPage": "اطلاعات تماس",
+    "Ticket": "تیکت‌ها",
+    "SiteSettings": "تنظیمات سایت",
+    "LogEntry": "لاگ‌های سیستم",
+    "Session": "نشست‌ها",
+}
 
 
 def _custom_get_app_list(request, app_label=None):
+    # Django first filters each model using its real model permissions.
+    # We only reorganize the visible models; this does not grant access.
     app_list = _original_get_app_list(request, app_label)
+    visible_models = {
+        model["object_name"]: model
+        for app in app_list
+        for model in app["models"]
+    }
 
-    apps_by_label = {a['app_label']: a for a in app_list}
+    grouped_names = set()
+    custom_app_list = []
 
-    all_models = {}
-    for a in app_list:
-        for m in a['models']:
-            all_models[m['object_name']] = m
+    for index, (section_name, object_names) in enumerate(_ADMIN_MENU_GROUPS):
+        models = []
+        for object_name in object_names:
+            model = visible_models.get(object_name)
+            if model is not None:
+                model_copy = dict(model)
+                model_copy["name"] = _ADMIN_MODEL_LABELS.get(
+                    object_name, model_copy["name"]
+                )
+                models.append(model_copy)
+                grouped_names.add(object_name)
 
-    if 'LogEntry' in all_models:
-        all_models['LogEntry']['name'] = 'لاگ های سیستم'
-
-    new_app_list = []
-
-    # --- گروه ۱: مدیریت کاربران ---
-    auth_app = apps_by_label.get('auth')
-    if auth_app:
-        auth_app = dict(auth_app)
-        auth_app['name'] = 'مدیریت کاربران'
-        models = list(auth_app['models'])
-        if 'Session' in all_models:
-            models.append(all_models['Session'])
         if models:
-            auth_app['models'] = models
-            new_app_list.append(auth_app)
+            custom_app_list.append({
+                "name": section_name,
+                "app_label": f"admin_section_{index}",
+                "app_url": "",
+                "has_module_perms": True,
+                "models": models,
+            })
 
-    # --- گروه ۲: مدیریت فایل ها و اطلاعات ---
-    listings_app = apps_by_label.get('listings')
-    if listings_app:
-        listings_app = dict(listings_app)
-        listings_app['name'] = 'مدیریت فایل ها و اطلاعات'
-        order_map = {'Property': 0, 'ContactPage': 1, 'Ticket': 2}
-        filtered = [m for m in listings_app['models'] if m['object_name'] in order_map]
-        filtered.sort(key=lambda m: order_map[m['object_name']])
-        if filtered:
-            listings_app['models'] = filtered
-            new_app_list.append(listings_app)
+    # Keep any future registered models visible rather than silently hiding them.
+    for app in app_list:
+        extras = [
+            dict(model)
+            for model in app["models"]
+            if model["object_name"] not in grouped_names
+        ]
+        if extras:
+            custom_app_list.append({
+                "name": app["name"],
+                "app_label": app["app_label"],
+                "app_url": app["app_url"],
+                "has_module_perms": app["has_module_perms"],
+                "models": extras,
+            })
 
-    # --- گروه ۳: تنظیمات سایت ---
-    settings_models = []
-    if 'SiteSettings' in all_models:
-        settings_models.append(all_models['SiteSettings'])
-    if 'LogEntry' in all_models:
-        settings_models.append(all_models['LogEntry'])
-    if settings_models:
-        new_app_list.append({
-            'name': 'تنظیمات سایت',
-            'app_label': 'site_settings_group',
-            'app_url': '',
-            'has_module_perms': True,
-            'models': settings_models,
-        })
-
-    return new_app_list
+    return custom_app_list
 
 
 admin.site.get_app_list = _custom_get_app_list
