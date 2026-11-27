@@ -57,6 +57,14 @@
             <label class="form-label">شهر</label>
             <input type="text" name="city" value="{{ filters.city|default:'' }}" class="form-control" placeholder="مثلاً تهران">
         </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label">حداقل متراژ</label>
+            <input type="number" min="0" name="min_area" value="{{ filters.min_area|default:'' }}" class="form-control" inputmode="numeric">
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label">حداکثر متراژ</label>
+            <input type="number" min="0" name="max_area" value="{{ filters.max_area|default:'' }}" class="form-control" inputmode="numeric">
+        </div>
         <div class="col-12 col-md-3 d-flex gap-2">
             <button type="submit" class="btn-brand flex-fill">جست‌وجو</button>
             <a href="{% url 'listings:list' %}" class="btn-ghost">پاک‌سازی</a>
@@ -117,5 +125,31 @@
 </div>
 {% else %}
 <div class="alert alert-light text-center border">هیچ فایلی با این فیلترها یافت نشد.</div>
+{% endif %}
+
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="mt-4" aria-label="صفحه‌بندی فایل‌ها">
+    <ul class="pagination justify-content-center flex-wrap">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="{% querystring page=page_obj.previous_page_number %}">قبلی</a></li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">قبلی</span></li>
+        {% endif %}
+
+        {% for page_number in page_obj.paginator.page_range %}
+            {% if page_number == page_obj.number %}
+            <li class="page-item active" aria-current="page"><span class="page-link">{{ page_number }}</span></li>
+            {% elif page_number >= page_obj.number|add:"-2" and page_number <= page_obj.number|add:"2" %}
+            <li class="page-item"><a class="page-link" href="{% querystring page=page_number %}">{{ page_number }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="{% querystring page=page_obj.next_page_number %}">بعدی</a></li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">بعدی</span></li>
+        {% endif %}
+    </ul>
+</nav>
 {% endif %}
 {% endblock %}
