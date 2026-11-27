@@ -32,7 +32,10 @@ class RolePermissionMixin:
             return True
         try:
             profile, _ = UserProfile.objects.get_or_create(user=request.user)
-            return profile.role in self.allowed_roles
+            return (
+                profile.role == UserProfile.ROLE_SUPER
+                or profile.role in self.allowed_roles
+            )
         except Exception:
             return False
 
