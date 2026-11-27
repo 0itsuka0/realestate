@@ -4,18 +4,21 @@
 
 {% block content %}
 
-{% if site_settings.banner_image or site_settings.banner_title %}
-<section class="banner">
+{% if site_settings.banner_image or site_settings.banner_title or site_settings.banner_subtitle %}
+<section class="home-banner" aria-label="بنر صفحهٔ اصلی">
     {% if site_settings.banner_image %}
-    <div class="banner-bg" style="background-image: url('{{ site_settings.banner_image.url }}');"></div>
+    <img class="home-banner-image" src="{{ site_settings.banner_image.url }}" alt="{{ site_settings.banner_title|default:site_settings.site_name }}" fetchpriority="high">
+    <div class="home-banner-shade"></div>
     {% endif %}
-    <div class="banner-content">
+    <div class="home-banner-content">
         {% if site_settings.banner_title %}<h2>{{ site_settings.banner_title }}</h2>{% endif %}
         {% if site_settings.banner_subtitle %}<p>{{ site_settings.banner_subtitle }}</p>{% endif %}
     </div>
 </section>
 {% endif %}
 
+<div class="property-page-layout">
+    <aside class="property-search-sidebar" aria-label="جست‌وجو و فیلتر فایل‌ها">
 <section class="property-search-panel" aria-labelledby="search-title">
     <div class="search-panel-heading">
         <div>
@@ -27,6 +30,9 @@
     </div>
 
     <form method="get" action="{% url 'listings:list' %}" class="property-search-form">
+        <details class="search-accordion-section search-keyword-section">
+            <summary><span>جست‌وجوی عبارت</span><small>عنوان، آدرس، شهر و...</small></summary>
+            <div class="search-accordion-body">
         <div class="search-keyword-field">
             <label for="property-search-q">عبارت جست‌وجو</label>
             <div class="search-input-wrap">
@@ -38,7 +44,12 @@
             </div>
             <small>می‌توانید چند کلمه وارد کنید؛ همهٔ عبارت‌ها در اطلاعات فایل بررسی می‌شوند.</small>
         </div>
+            </div>
+        </details>
 
+        <details class="search-accordion-section search-main-filters">
+            <summary><span>نوع ملک و موقعیت</span><small>معامله، کاربری و موقعیت</small></summary>
+            <div class="search-accordion-body">
         <div class="search-fields-layout">
             <div class="search-basic-grid">
             <div class="search-field">
@@ -93,7 +104,12 @@
         </div>
 
         </div>
+            </div>
+        </details>
 
+        <details class="search-accordion-section search-price-filters">
+            <summary><span>محدودهٔ قیمت</span><small>فروش، ودیعه و اجاره</small></summary>
+            <div class="search-accordion-body">
         <div class="price-filter-area">
             <div class="price-filter-heading">
                 <div>
@@ -142,13 +158,15 @@
                 برای نمایش بازهٔ قیمت، ابتدا نوع معامله را روی فروش یا اجاره قرار دهید.
             </p>
         </div>
+            </div>
+        </details>
 
-        <details class="advanced-filter-details" {% if filters.bedrooms or filters.has_parking or filters.has_elevator or filters.has_storage or filters.has_balcony or filters.is_featured or filters.sort == 'oldest' or filters.sort == 'price_asc' or filters.sort == 'price_desc' %}open{% endif %}>
+        <details class="search-accordion-section search-advanced-filters">
             <summary>
                 <span>فیلترهای تکمیلی</span>
                 <small>تعداد اتاق، امکانات و ترتیب نمایش</small>
             </summary>
-            <div class="advanced-filter-content">
+            <div class="search-accordion-body advanced-filter-content">
                 <div class="advanced-control-grid">
                     <div class="search-field">
                         <label for="filter-bedrooms">حداقل تعداد اتاق</label>
@@ -202,10 +220,13 @@
         </div>
     </form>
 </section>
+    </aside>
+    <section class="property-results" aria-labelledby="results-title">
+
 
 <div class="results-toolbar">
     <div>
-        <h2>فایل‌های موجود</h2>
+        <h2 id="results-title">فایل‌های موجود</h2>
         <p><strong>{{ count|intcomma }}</strong> فایل مطابق معیارهای جست‌وجوی شما</p>
     </div>
     {% if count %}
@@ -216,7 +237,7 @@
 {% if properties %}
 <div class="row g-3">
     {% for prop in properties %}
-    <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+    <div class="col-12 col-sm-6 col-lg-6 col-xl-4">
         <a href="{% url 'listings:detail' prop.pk %}" class="text-decoration-none text-reset d-block h-100">
             <div class="property-card">
                 {% if prop.main_image %}
@@ -296,6 +317,9 @@
     </ul>
 </nav>
 {% endif %}
+
+    </section>
+</div>
 
 <script>
 (function () {
