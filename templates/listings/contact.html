@@ -63,30 +63,22 @@
             <h2 class="section-title">ارسال پیام / تیکت</h2>
             <p class="text-muted small">پیام شما مستقیماً به مدیران ارسال می‌شود.</p>
 
-            <form method="post" action="{% url 'listings:contact' %}">
+            <form method="post" action="{% url 'listings:contact' %}" novalidate>
                 {% csrf_token %}
                 <input type="text" name="website" class="d-none" tabindex="-1" autocomplete="off">
 
+                {% for field in ticket_form %}
                 <div class="mb-3">
-                    <label class="form-label">نام و نام خانوادگی <span class="text-danger">*</span></label>
-                    <input type="text" name="name" class="form-control" required>
+                    <label class="form-label" for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                    <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">شماره تماس <span class="text-danger">*</span></label>
-                    <input type="tel" name="phone" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">ایمیل (اختیاری)</label>
-                    <input type="email" name="email" class="form-control">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">موضوع <span class="text-danger">*</span></label>
-                    <input type="text" name="subject" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">پیام <span class="text-danger">*</span></label>
-                    <textarea name="message" class="form-control" rows="5" required></textarea>
-                </div>
+                {% endfor %}
                 <button type="submit" class="btn-brand w-100">ارسال پیام</button>
             </form>
         </div>
