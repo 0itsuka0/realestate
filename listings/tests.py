@@ -151,6 +151,7 @@ class ManagerAdminTests(TestCase):
                 "username": "propertymanager",
                 "password1": "Unique-Manager-Password-2026!",
                 "password2": "Unique-Manager-Password-2026!",
+                "is_superuser": "on",
                 "can_manage_properties": "on",
             },
         )
@@ -203,6 +204,23 @@ class ManagerAdminTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertFalse(User.objects.filter(pk=manager.pk).exists())
+
+    def test_view_only_session_access_does_not_offer_delete_action(self):
+        manager = User.objects.create_user(
+            username="sessionviewer",
+            password="Session-Viewer-Password-2026!",
+            is_staff=True,
+        )
+        view_permission = Permission.objects.get_by_natural_key(
+            "view_session", "sessions", "session"
+        )
+        manager.user_permissions.add(view_permission)
+        self.client.force_login(manager)
+
+        response = self.client.get(reverse("admin:sessions_session_changelist"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'value="delete_expired_sessions"')
 
     def test_superuser_is_not_listed_as_a_manager(self):
         response = self.client.get(reverse("admin:auth_user_changelist"))
