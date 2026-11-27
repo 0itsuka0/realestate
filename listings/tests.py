@@ -1,10 +1,10 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 
 from .forms import TicketForm
-from .models import Property, Ticket, UserProfile
+from .models import Property, Ticket
 
 
 class PropertyModelTests(TestCase):
@@ -121,28 +121,115 @@ class TicketFormTests(TestCase):
 
 
 
-class UserAdminProfileTests(TestCase):
+class ManagerAdminTests(TestCase):
     def setUp(self):
-        admin_user = User.objects.create_superuser(
-            username="siteadmin",
-            email="siteadmin@example.com",
-            password="A-Strong-Test-Password-2026!",
+        self.root = User.objects.create_superuser(
+            username="rootadmin",
+            email="root@example.com",
+            password="Root-Test-Password-2026!",
         )
-        self.client.force_login(admin_user)
+        self.client.force_login(self.root)
 
-    def test_admin_user_creation_creates_one_profile(self):
+    def test_manager_add_form_only_shows_login_and_section_checkboxes(self):
+        response = self.client.get(reverse("admin:auth_user_add"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="username"')
+        self.assertContains(response, 'name="password1"')
+        self.assertContains(response, 'name="password2"')
+        self.assertContains(response, 'name="can_manage_properties"')
+        self.assertContains(response, 'name="can_manage_contact"')
+        self.assertNotContains(response, 'name="email"')
+        self.assertNotContains(response, 'name="first_name"')
+        self.assertNotContains(response, 'name="groups"')
+        self.assertNotContains(response, 'name="user_permissions"')
+        self.assertNotContains(response, 'name="is_superuser"')
+
+    def test_create_manager_assigns_only_selected_section_permissions(self):
         response = self.client.post(
             reverse("admin:auth_user_add"),
             {
-                "username": "newmanager",
-                "password1": "A-Different-Strong-Password-2026!",
-                "password2": "A-Different-Strong-Password-2026!",
+                "username": "propertymanager",
+                "password1": "Unique-Manager-Password-2026!",
+                "password2": "Unique-Manager-Password-2026!",
+                "can_manage_properties": "on",
             },
         )
-
         self.assertEqual(response.status_code, 302)
-        new_user = User.objects.get(username="newmanager")
-        self.assertEqual(
-            UserProfile.objects.filter(user=new_user).count(),
-            1,
+
+        manager = User.objects.get(username="propertymanager")
+        self.assertTrue(manager.is_staff)
+        self.assertTrue(manager.is_active)
+        self.assertFalse(manager.is_superuser)
+        self.assertTrue(manager.has_perm("listings.view_property"))
+        self.assertTrue(manager.has_perm("listings.add_propertyimage"))
+        self.assertTrue(manager.has_perm("listings.change_propertyvideo"))
+        self.assertFalse(manager.has_perm("listings.view_ticket"))
+        self.assertFalse(manager.groups.exists())
+
+    def test_editing_manager_replaces_permissions_from_checkboxes(self):
+        manager = User.objects.create_user(
+            username="editablemanager",
+            password="Existing-Manager-Password-2026!",
+            is_staff=True,
         )
+        property_permission = Permission.objects.get_by_natural_key(
+            "view_property", "listings", "property"
+        )
+        manager.user_permissions.add(property_permission)
+
+        response = self.client.post(
+            reverse("admin:auth_user_change", args=[manager.pk]),
+            {
+                "username": "editablemanager",
+                "can_manage_tickets": "on",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+        manager.refresh_from_db()
+        self.assertTrue(manager.has_perm("listings.view_ticket"))
+        self.assertTrue(manager.has_perm("listings.change_ticket"))
+        self.assertFalse(manager.has_perm("listings.view_property"))
+
+    def test_manager_can_be_deleted_from_manager_list(self):
+        manager = User.objects.create_user(
+            username="deleteme",
+            password="Delete-Manager-Password-2026!",
+            is_staff=True,
+        )
+        response = self.client.post(
+            reverse("admin:auth_user_delete", args=[manager.pk]),
+            {"post": "yes"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(User.objects.filter(pk=manager.pk).exists())
+
+    def test_superuser_is_not_listed_as_a_manager(self):
+        response = self.client.get(reverse("admin:auth_user_changelist"))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "rootadmin")
+
+    def test_manager_permissions_control_direct_admin_urls_and_menu(self):
+        manager = User.objects.create_user(
+            username="limitedmanager",
+            password="Limited-Manager-Password-2026!",
+            is_staff=True,
+        )
+        property_permissions = Permission.objects.filter(
+            content_type__app_label="listings",
+            content_type__model="property",
+        )
+        manager.user_permissions.add(*property_permissions)
+
+        self.client.force_login(manager)
+        allowed = self.client.get(reverse("admin:listings_property_changelist"))
+        denied = self.client.get(reverse("admin:listings_ticket_changelist"))
+        user_admin_denied = self.client.get(reverse("admin:auth_user_changelist"))
+        index = self.client.get(reverse("admin:index"))
+
+        self.assertEqual(allowed.status_code, 200)
+        self.assertEqual(denied.status_code, 403)
+        self.assertEqual(user_admin_denied.status_code, 403)
+        self.assertContains(index, "فایل‌های ملکی")
+        self.assertNotContains(index, "تیکت‌ها")
+        self.assertNotContains(index, "مدیریت مدیران")
