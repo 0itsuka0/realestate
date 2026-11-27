@@ -278,6 +278,16 @@ class UserProfileInline(admin.StackedInline):
 
 class UserAdmin(BaseUserAdmin):
     inlines = (UserProfileInline,)
+
+    def get_inlines(self, request, obj=None):
+        # The post_save signal creates a profile when the user is first saved.
+        # Do not show an empty profile inline on the add form, or it may try to
+        # insert the same one again. Ensure legacy users have a profile before
+        # displaying the inline on their change form.
+        if obj is None:
+            return ()
+        UserProfile.objects.get_or_create(user=obj)
+        return super().get_inlines(request, obj)
     list_display = ('username', 'email', 'role_display', 'is_active', 'is_staff', 'is_superuser')
     list_filter = ('is_active', 'is_staff', 'is_superuser')
 
