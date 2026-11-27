@@ -1,9 +1,10 @@
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 
 from .forms import TicketForm
-from .models import Property, Ticket
+from .models import Property, Ticket, UserProfile
 
 
 class PropertyModelTests(TestCase):
@@ -117,3 +118,31 @@ class TicketFormTests(TestCase):
         )
         self.assertRedirects(response, reverse("listings:contact"))
         self.assertEqual(Ticket.objects.count(), 0)
+
+
+
+class UserAdminProfileTests(TestCase):
+    def setUp(self):
+        admin_user = User.objects.create_superuser(
+            username="siteadmin",
+            email="siteadmin@example.com",
+            password="A-Strong-Test-Password-2026!",
+        )
+        self.client.force_login(admin_user)
+
+    def test_admin_user_creation_creates_one_profile(self):
+        response = self.client.post(
+            reverse("admin:auth_user_add"),
+            {
+                "username": "newmanager",
+                "password1": "A-Different-Strong-Password-2026!",
+                "password2": "A-Different-Strong-Password-2026!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        new_user = User.objects.get(username="newmanager")
+        self.assertEqual(
+            UserProfile.objects.filter(user=new_user).count(),
+            1,
+        )
