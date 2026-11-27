@@ -235,7 +235,31 @@ class SiteSettings(models.Model):
 
 
 # ---------- اطلاعات تماس ----------
+class ContactPage(models.Model):
+    """نگه‌دارندهٔ صفحهٔ اطلاعات تماس (تک‌نسخه‌ای) — فقط برای نمایش ContactItem و SocialLink در یک صفحه."""
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='آخرین ویرایش')
+
+    class Meta:
+        verbose_name = 'اطلاعات تماس'
+        verbose_name_plural = 'اطلاعات تماس'
+
+    def __str__(self):
+        return 'اطلاعات تماس'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
 class ContactItem(models.Model):
+    contact_page = models.ForeignKey(
+        ContactPage, on_delete=models.CASCADE, null=True, blank=True,
+        related_name='contact_items', verbose_name='صفحهٔ تماس'
+    )
     TYPE_PHONE = 'phone'
     TYPE_MOBILE = 'mobile'
     TYPE_EMAIL = 'email'
@@ -275,6 +299,10 @@ class ContactItem(models.Model):
 
 # ---------- شبکه‌های اجتماعی ----------
 class SocialLink(models.Model):
+    contact_page = models.ForeignKey(
+        ContactPage, on_delete=models.CASCADE, null=True, blank=True,
+        related_name='social_links', verbose_name='صفحهٔ تماس'
+    )
     PLATFORM_CHOICES = [
         ('instagram', 'اینستاگرام'), ('telegram', 'تلگرام'),
         ('whatsapp', 'واتساپ'), ('x', 'X (توییتر)'),
