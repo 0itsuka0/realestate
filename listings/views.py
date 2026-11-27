@@ -13,7 +13,7 @@ def _to_int(value):
 
 
 def property_list(request):
-    qs = Property.objects.filter(is_active=True).prefetch_related('images')
+    qs = Property.objects.filter(status=Property.STATUS_ACTIVE).prefetch_related('images')
 
     q = request.GET.get('q', '').strip()
     if q:
@@ -28,6 +28,10 @@ def property_list(request):
     deal_type = request.GET.get('deal_type', '').strip()
     if deal_type:
         qs = qs.filter(deal_type=deal_type)
+
+    usage_type = request.GET.get('usage_type', '').strip()
+    if usage_type:
+        qs = qs.filter(usage_type=usage_type)
 
     property_type = request.GET.get('property_type', '').strip()
     if property_type:
@@ -45,10 +49,25 @@ def property_list(request):
     if max_area is not None:
         qs = qs.filter(area__lte=max_area)
 
+    # گروه‌بندی نوع ملک برای نمایش در optgroup
+    property_choices_grouped = [
+        ('مسکونی', [
+            (Property.PT_APARTMENT, 'آپارتمان'),
+            (Property.PT_HOUSE_VILLA, 'خانه و ویلا'),
+            (Property.PT_LAND_OLD, 'زمین و ملک کلنگی'),
+        ]),
+        ('اداری تجاری', [
+            (Property.PT_OFFICE, 'دفترکار، اتاق اداری، مطب'),
+            (Property.PT_SHOP, 'مغازه و غرفه'),
+            (Property.PT_INDUSTRIAL, 'صنعتی، کشاورزی، تجاری'),
+        ]),
+    ]
+
     context = {
         'properties': qs,
         'deal_choices': Property.DEAL_CHOICES,
-        'property_choices': Property.PROPERTY_CHOICES,
+        'usage_choices': Property.USAGE_CHOICES,
+        'property_choices_grouped': property_choices_grouped,
         'filters': request.GET,
         'count': qs.count(),
     }
@@ -56,7 +75,8 @@ def property_list(request):
 
 
 def property_detail(request, pk):
-    prop = get_object_or_404(Property, pk=pk, is_active=True)
+    # اجازه نمایش همه وضعیت‌ها با لینک مستقیم، برای آرشیو
+    prop = get_object_or_404(Property, pk=pk)
 
     media_items = []
     for img in prop.images.all():
@@ -89,7 +109,6 @@ def property_detail(request, pk):
 
 def contact_page(request):
     if request.method == 'POST':
-        # هانی‌پات: اگر این فیلد مخفی پر شود، ربات است
         if request.POST.get('website'):
             return redirect('listings:contact')
 

@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.rtl.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <script>
-        // قبل از رندر، تم را اعمال کن تا پرش نداشته باشیم
         (function () {
             try {
                 var t = localStorage.getItem('theme');
@@ -36,10 +35,15 @@
             </a>
 
             <nav class="deal-nav">
-                <a href="{% url 'listings:list' %}" class="{% if not request.GET.deal_type %}active{% endif %}">همه</a>
-                <a href="{% url 'listings:list' %}?deal_type=sale" class="{% if request.GET.deal_type == 'sale' %}active{% endif %}">فروش</a>
-                <a href="{% url 'listings:list' %}?deal_type=rent" class="{% if request.GET.deal_type == 'rent' %}active{% endif %}">اجاره</a>
-                <a href="{% url 'listings:list' %}?deal_type=mortgage" class="{% if request.GET.deal_type == 'mortgage' %}active{% endif %}">رهن</a>
+                <a href="{% url 'listings:list' %}" class="{% if not request.GET.deal_type and not request.GET.usage_type %}active{% endif %}">همه</a>
+                <a href="{% url 'listings:list' %}?deal_type=rent&usage_type=residential"
+                   class="{% if request.GET.deal_type == 'rent' and request.GET.usage_type == 'residential' %}active{% endif %}">اجاره مسکونی</a>
+                <a href="{% url 'listings:list' %}?deal_type=sale&usage_type=residential"
+                   class="{% if request.GET.deal_type == 'sale' and request.GET.usage_type == 'residential' %}active{% endif %}">فروش مسکونی</a>
+                <a href="{% url 'listings:list' %}?deal_type=rent&usage_type=commercial"
+                   class="{% if request.GET.deal_type == 'rent' and request.GET.usage_type == 'commercial' %}active{% endif %}">اجاره تجاری</a>
+                <a href="{% url 'listings:list' %}?deal_type=sale&usage_type=commercial"
+                   class="{% if request.GET.deal_type == 'sale' and request.GET.usage_type == 'commercial' %}active{% endif %}">فروش تجاری</a>
             </nav>
 
             <div class="header-actions">

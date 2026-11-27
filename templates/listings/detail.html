@@ -5,33 +5,60 @@
 {% block content %}
 <a href="{% url 'listings:list' %}" class="btn-ghost mb-3 d-inline-block">→ بازگشت به فهرست</a>
 
+{% if property.status != 'active' %}
+<div class="alert alert-warning">
+    این فایل در وضعیت «{{ property.get_status_display }}» است و در صفحهٔ اصلی نمایش داده نمی‌شود.
+</div>
+{% endif %}
+
 <div class="row g-3 detail-layout">
 
-    {# ستون راست: جزئیات #}
     <div class="col-12 col-lg-5 order-2 order-lg-1">
         <div class="detail-info-card">
 
             <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
                 <h1 class="detail-title">{{ property.title }}</h1>
-                {% if property.is_featured %}<span class="tag badge-featured">ویژه</span>{% endif %}
+                <div class="d-flex gap-1 flex-wrap">
+                    {% if property.is_featured %}<span class="tag badge-featured">ویژه</span>{% endif %}
+                    <span class="tag">{{ property.get_status_display }}</span>
+                </div>
             </div>
 
             <div class="detail-location">
-                {{ property.province }} — {{ property.city }}
+                {{ property.province }}{% if property.province and property.city %} — {% endif %}{{ property.city }}
                 {% if property.neighborhood %} — {{ property.neighborhood }}{% endif %}
                 {% if property.address %}<br><small>{{ property.address }}</small>{% endif %}
             </div>
 
+            <div class="detail-categories">
+                <span class="tag">{{ property.get_deal_type_display }}</span>
+                <span class="tag">{{ property.get_usage_type_display }}</span>
+                <span class="tag">{{ property.get_property_type_display }}</span>
+            </div>
+
             <div class="price-box">
-                {% if property.deal_type == 'sale' and property.price %}
-                    <div class="price-main">{{ property.price|intcomma }} <small>تومان</small></div>
+                {% if property.deal_type == 'sale' %}
+                    {% if property.price %}
+                        <div class="price-main">{{ property.price|intcomma }} <small>تومان</small></div>
+                        {% if property.price_per_meter %}
+                            <div class="price-sub">{{ property.price_per_meter|intcomma }} تومان هر متر</div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-muted">قیمت ثبت نشده</div>
+                    {% endif %}
                 {% elif property.deal_type == 'rent' %}
                     {% if property.deposit %}<div class="price-row">ودیعه: <strong>{{ property.deposit|intcomma }}</strong> تومان</div>{% endif %}
                     {% if property.rent %}<div class="price-row">اجاره: <strong>{{ property.rent|intcomma }}</strong> تومان</div>{% endif %}
-                {% elif property.deal_type == 'mortgage' and property.deposit %}
-                    <div class="price-main">{{ property.deposit|intcomma }} <small>تومان رهن</small></div>
-                {% else %}
-                    <div class="text-muted">قیمت ثبت نشده</div>
+                    {% if property.deposit and property.rent %}
+                        {% if property.is_convertible %}
+                            <div class="price-sub">ودیعه و اجاره قابل تبدیل</div>
+                        {% else %}
+                            <div class="price-sub">ودیعه و اجاره غیر قابل تبدیل</div>
+                        {% endif %}
+                    {% endif %}
+                    {% if not property.deposit and not property.rent %}
+                        <div class="text-muted">قیمت ثبت نشده</div>
+                    {% endif %}
                 {% endif %}
             </div>
 
@@ -42,15 +69,32 @@
 
             <h2 class="section-title">مشخصات</h2>
             <div class="spec-grid">
-                <div class="spec-item"><span>نوع معامله</span><strong>{{ property.get_deal_type_display }}</strong></div>
-                <div class="spec-item"><span>نوع ملک</span><strong>{{ property.get_property_type_display }}</strong></div>
+                {% if property.area %}
                 <div class="spec-item"><span>متراژ</span><strong>{{ property.area }} متر</strong></div>
-                <div class="spec-item"><span>خواب</span><strong>{{ property.bedrooms }}</strong></div>
-                <div class="spec-item"><span>سرویس</span><strong>{{ property.bathrooms }}</strong></div>
-                {% if property.year_built %}<div class="spec-item"><span>سال ساخت</span><strong>{{ property.year_built }}</strong></div>{% endif %}
-                {% if property.floor is not None %}<div class="spec-item"><span>طبقه</span><strong>{{ property.floor }}</strong></div>{% endif %}
-                {% if property.total_floors %}<div class="spec-item"><span>کل طبقات</span><strong>{{ property.total_floors }}</strong></div>{% endif %}
+                {% endif %}
+                {% if property.bedrooms %}
+                <div class="spec-item"><span>تعداد اتاق</span><strong>{{ property.bedrooms }}</strong></div>
+                {% endif %}
+                {% if property.year_built %}
+                <div class="spec-item"><span>سال ساخت</span><strong>{{ property.year_built }}</strong></div>
+                {% endif %}
+                {% if property.floor is not None %}
+                <div class="spec-item"><span>طبقه</span><strong>{{ property.floor }}</strong></div>
+                {% endif %}
+                {% if property.total_floors %}
+                <div class="spec-item"><span>کل طبقات</span><strong>{{ property.total_floors }}</strong></div>
+                {% endif %}
             </div>
+
+            {% if property.has_elevator or property.has_storage or property.has_parking or property.has_balcony %}
+            <h2 class="section-title">ویژگی‌ها و امکانات</h2>
+            <div class="feature-grid">
+                {% if property.has_elevator %}<span class="feature-chip">🛗 آسانسور</span>{% endif %}
+                {% if property.has_storage %}<span class="feature-chip">📦 انباری</span>{% endif %}
+                {% if property.has_parking %}<span class="feature-chip">🅿️ پارکینگ</span>{% endif %}
+                {% if property.has_balcony %}<span class="feature-chip">🌿 بالکن</span>{% endif %}
+            </div>
+            {% endif %}
 
             {% if property.description %}
             <h2 class="section-title">توضیحات</h2>
@@ -60,7 +104,6 @@
         </div>
     </div>
 
-    {# ستون چپ: گالری تصاویر و ویدیو #}
     <div class="col-12 col-lg-7 order-1 order-lg-2">
         <div class="gallery">
             {% if media_items %}

@@ -32,11 +32,24 @@
             </select>
         </div>
         <div class="col-6 col-md-2">
+            <label class="form-label">کاربری</label>
+            <select name="usage_type" class="form-select">
+                <option value="">همه</option>
+                {% for value, label in usage_choices %}
+                <option value="{{ value }}" {% if filters.usage_type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
             <label class="form-label">نوع ملک</label>
             <select name="property_type" class="form-select">
                 <option value="">همه</option>
-                {% for value, label in property_choices %}
-                <option value="{{ value }}" {% if filters.property_type == value %}selected{% endif %}>{{ label }}</option>
+                {% for group_label, options in property_choices_grouped %}
+                <optgroup label="{{ group_label }}">
+                    {% for value, label in options %}
+                    <option value="{{ value }}" {% if filters.property_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </optgroup>
                 {% endfor %}
             </select>
         </div>
@@ -44,7 +57,7 @@
             <label class="form-label">شهر</label>
             <input type="text" name="city" value="{{ filters.city|default:'' }}" class="form-control" placeholder="مثلاً تهران">
         </div>
-        <div class="col-6 col-md-2 d-flex gap-2">
+        <div class="col-12 col-md-3 d-flex gap-2">
             <button type="submit" class="btn-brand flex-fill">جست‌وجو</button>
             <a href="{% url 'listings:list' %}" class="btn-ghost">پاک‌سازی</a>
         </div>
@@ -75,20 +88,25 @@
                     </div>
                     <div class="property-tags">
                         <span class="tag">{{ prop.get_deal_type_display }}</span>
+                        <span class="tag">{{ prop.get_usage_type_display }}</span>
                         <span class="tag">{{ prop.get_property_type_display }}</span>
-                        <span class="tag">{{ prop.area }} متر</span>
-                        {% if prop.bedrooms %}<span class="tag">{{ prop.bedrooms }} خواب</span>{% endif %}
+                        {% if prop.area %}<span class="tag">{{ prop.area }} متر</span>{% endif %}
+                        {% if prop.bedrooms %}<span class="tag">{{ prop.bedrooms }} اتاق</span>{% endif %}
                     </div>
                     <div class="property-price">
-                        {% if prop.deal_type == 'sale' and prop.price %}
-                            <strong>{{ prop.price|intcomma }} تومان</strong>
+                        {% if prop.deal_type == 'sale' %}
+                            {% if prop.price %}
+                                <strong>{{ prop.price|intcomma }} تومان</strong>
+                                {% if prop.price_per_meter %}<span class="text-muted small">{{ prop.price_per_meter|intcomma }} تومان/متر</span>{% endif %}
+                            {% else %}
+                                <span class="text-muted">قیمت ثبت نشده</span>
+                            {% endif %}
                         {% elif prop.deal_type == 'rent' %}
                             {% if prop.deposit %}<span>ودیعه: <strong>{{ prop.deposit|intcomma }}</strong></span>{% endif %}
                             {% if prop.rent %}<span>اجاره: <strong>{{ prop.rent|intcomma }}</strong></span>{% endif %}
-                        {% elif prop.deal_type == 'mortgage' and prop.deposit %}
-                            <span>رهن: <strong>{{ prop.deposit|intcomma }}</strong> تومان</span>
-                        {% else %}
-                            <span class="text-muted">قیمت ثبت نشده</span>
+                            {% if not prop.deposit and not prop.rent %}
+                                <span class="text-muted">قیمت ثبت نشده</span>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
