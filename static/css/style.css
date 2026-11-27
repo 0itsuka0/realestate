@@ -169,3 +169,189 @@ a.contact-value:hover { color: var(--brand); }
     .sticky-form { position: static; }
     .detail-title { font-size: 1.05rem; }
 }
+
+/* ---------- Advanced property search ---------- */
+.property-search-panel {
+    position: relative;
+    padding: 1.45rem;
+    margin-bottom: 1.65rem;
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    background: var(--card-bg);
+    box-shadow: 0 8px 28px rgba(31, 35, 48, .055);
+}
+.search-panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--card-border);
+}
+.search-eyebrow { color: var(--brand); font-size: .75rem; font-weight: 700; }
+.search-panel-heading h1 { margin: .25rem 0 .2rem; color: var(--text); font-size: 1.25rem; font-weight: 700; }
+.search-panel-heading p { margin: 0; color: var(--text-muted); font-size: .82rem; }
+.search-panel-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+    border-radius: 15px;
+    color: var(--brand);
+    background: var(--brand-light);
+    font-size: 2rem;
+    line-height: 1;
+}
+.property-search-form { display: flex; flex-direction: column; gap: 1rem; }
+.search-keyword-field { display: flex; flex-direction: column; gap: .35rem; }
+.search-keyword-field > label, .search-field > label {
+    color: var(--text);
+    font-size: .8rem;
+    font-weight: 600;
+}
+.search-keyword-field > small { color: var(--text-muted); font-size: .7rem; }
+.search-input-wrap { position: relative; }
+.search-input-wrap > span {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    z-index: 2;
+    transform: translateY(-50%);
+    color: var(--brand);
+    font-size: 1.35rem;
+}
+.search-input-wrap .form-control { min-height: 48px; padding-right: 43px; border-radius: 11px; }
+.search-basic-grid, .search-location-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .8rem;
+}
+.search-field { display: flex; flex-direction: column; gap: .35rem; min-width: 0; }
+.property-search-panel .form-control, .property-search-panel .form-select {
+    min-height: 42px;
+    border: 1px solid var(--card-border);
+    border-radius: 9px;
+    color: var(--text);
+    background-color: var(--input-bg);
+    font-family: inherit;
+    font-size: .82rem;
+}
+.property-search-panel .form-control:focus, .property-search-panel .form-select:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-light);
+}
+.price-filter-area {
+    padding: 1rem;
+    border: 1px solid var(--card-border);
+    border-radius: 13px;
+    background: var(--bg);
+}
+.price-filter-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: .8rem;
+}
+.price-filter-heading h2 { margin: 0 0 .15rem; color: var(--text); font-size: .9rem; font-weight: 700; }
+.price-filter-heading p { margin: 0; color: var(--text-muted); font-size: .72rem; }
+.price-filter-heading > span { color: var(--brand); font-size: .72rem; font-weight: 700; }
+.price-range-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+.rent-price-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .8rem; }
+.price-filter-hint { margin: .2rem 0 0; color: var(--text-muted); font-size: .75rem; }
+[hidden] { display: none !important; }
+.advanced-filter-details {
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+.advanced-filter-details > summary {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .85rem 1rem;
+    color: var(--text);
+    background: var(--bg);
+    cursor: pointer;
+    list-style-position: inside;
+    font-size: .82rem;
+    font-weight: 700;
+}
+.advanced-filter-details > summary::marker { color: var(--brand); }
+.advanced-filter-details > summary small { color: var(--text-muted); font-size: .7rem; font-weight: 400; }
+.advanced-filter-content { padding: 1rem; }
+.advanced-control-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+.amenity-filter-list { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: 1rem; }
+.amenity-option {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .45rem .7rem;
+    border: 1px solid var(--card-border);
+    border-radius: 9px;
+    color: var(--text);
+    background: var(--bg);
+    font-size: .76rem;
+    cursor: pointer;
+}
+.amenity-option input { accent-color: var(--brand); }
+.amenity-option.featured-option { color: #8a6d00; background: #fff8df; border-color: #f0e2ae; }
+.search-form-actions { display: flex; align-items: center; gap: .65rem; flex-wrap: wrap; }
+.btn-search-submit, .btn-search-reset {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    min-height: 43px;
+    padding: .6rem 1.15rem;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: .82rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+.btn-search-submit { border: 0; color: #fff; background: var(--brand); }
+.btn-search-submit:hover { color: #fff; background: var(--brand-hover); }
+.btn-search-submit span { font-size: 1.2rem; line-height: 1; }
+.btn-search-reset { border: 1px solid var(--card-border); color: var(--text-muted); background: transparent; }
+.btn-search-reset:hover { color: var(--brand); border-color: var(--brand); background: var(--brand-light); }
+.results-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 1.55rem 0 1rem;
+}
+.results-toolbar h2 { margin: 0 0 .1rem; color: var(--text); font-size: 1.05rem; font-weight: 700; }
+.results-toolbar p { margin: 0; color: var(--text-muted); font-size: .78rem; }
+.results-toolbar p strong { color: var(--brand); }
+.results-count-badge { padding: .35rem .75rem; border-radius: 999px; color: var(--brand); background: var(--brand-light); font-size: .72rem; font-weight: 700; }
+.empty-search-state {
+    padding: 3rem 1.25rem;
+    border: 1px dashed var(--card-border);
+    border-radius: 16px;
+    background: var(--card-bg);
+    text-align: center;
+}
+.empty-search-state > span { display: block; color: var(--brand); font-size: 2.5rem; line-height: 1; }
+.empty-search-state h3 { margin: .75rem 0 .3rem; color: var(--text); font-size: 1rem; }
+.empty-search-state p { margin: 0 0 1rem; color: var(--text-muted); font-size: .8rem; }
+
+@media (max-width: 767px) {
+    .property-search-panel { padding: 1rem; border-radius: 14px; }
+    .search-panel-heading h1 { font-size: 1.05rem; }
+    .search-basic-grid, .search-location-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .rent-price-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .search-panel-icon { width: 44px; height: 44px; flex-basis: 44px; }
+}
+@media (max-width: 420px) {
+    .search-basic-grid, .search-location-grid, .price-range-grid, .advanced-control-grid { grid-template-columns: 1fr; }
+    .search-panel-heading { align-items: flex-start; }
+    .search-panel-icon { display: none; }
+    .search-form-actions > * { flex: 1 1 100%; }
+    .results-toolbar { align-items: flex-start; }
+}

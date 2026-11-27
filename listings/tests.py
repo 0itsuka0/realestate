@@ -73,6 +73,111 @@ class PropertyListViewTests(TestCase):
         self.assertEqual(response.context["count"], 2)
 
 
+class AdvancedPropertySearchTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        Property.objects.create(
+            title="آپارتمان مدرن زعفرانیه",
+            deal_type=Property.DEAL_SALE,
+            usage_type=Property.USAGE_RESIDENTIAL,
+            property_type=Property.PT_APARTMENT,
+            province="تهران",
+            city="تهران",
+            neighborhood="زعفرانیه",
+            price=4_000_000_000,
+            bedrooms=3,
+            has_parking=True,
+            has_elevator=True,
+            status=Property.STATUS_ACTIVE,
+        )
+        Property.objects.create(
+            title="آپارتمان اقتصادی",
+            deal_type=Property.DEAL_SALE,
+            usage_type=Property.USAGE_RESIDENTIAL,
+            property_type=Property.PT_APARTMENT,
+            province="البرز",
+            city="کرج",
+            neighborhood="گوهردشت",
+            price=2_000_000_000,
+            bedrooms=2,
+            status=Property.STATUS_ACTIVE,
+        )
+        Property.objects.create(
+            title="واحد اجاره‌ای مرکز شهر",
+            deal_type=Property.DEAL_RENT,
+            usage_type=Property.USAGE_RESIDENTIAL,
+            property_type=Property.PT_APARTMENT,
+            province="تهران",
+            city="تهران",
+            neighborhood="مرکز شهر",
+            deposit=500_000_000,
+            rent=15_000_000,
+            bedrooms=2,
+            has_storage=True,
+            status=Property.STATUS_ACTIVE,
+        )
+        Property.objects.create(
+            title="واحد اجاره‌ای با ودیعه کمتر",
+            deal_type=Property.DEAL_RENT,
+            usage_type=Property.USAGE_RESIDENTIAL,
+            property_type=Property.PT_APARTMENT,
+            province="تهران",
+            city="تهران",
+            neighborhood="نارمک",
+            deposit=250_000_000,
+            rent=20_000_000,
+            bedrooms=1,
+            status=Property.STATUS_ACTIVE,
+        )
+
+    def test_sale_price_range_filters_total_sale_price(self):
+        response = self.client.get(
+            reverse("listings:list"),
+            {"deal_type": "sale", "price_min": "3,000,000,000", "price_max": "5,000,000,000"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["count"], 1)
+        self.assertContains(response, "آپارتمان مدرن زعفرانیه")
+
+    def test_rent_filters_deposit_and_monthly_rent_separately(self):
+        response = self.client.get(
+            reverse("listings:list"),
+            {
+                "deal_type": "rent",
+                "deposit_min": "400000000",
+                "rent_max": "16000000",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["count"], 1)
+        self.assertContains(response, "واحد اجاره‌ای مرکز شهر")
+
+    def test_search_matches_multiple_words_across_location_fields(self):
+        response = self.client.get(
+            reverse("listings:list"),
+            {"q": "تهران زعفرانیه"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["count"], 1)
+        self.assertContains(response, "آپارتمان مدرن زعفرانیه")
+
+    def test_bedroom_and_amenity_filters_can_be_combined(self):
+        response = self.client.get(
+            reverse("listings:list"),
+            {"bedrooms": "3", "has_parking": "1", "has_elevator": "1"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["count"], 1)
+
+    def test_invalid_numeric_values_are_ignored_safely(self):
+        response = self.client.get(
+            reverse("listings:list"),
+            {"deal_type": "sale", "price_min": "not-a-number"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["count"], 2)
+
+
 class TicketFormTests(TestCase):
     def test_valid_ticket_is_saved(self):
         response = self.client.post(

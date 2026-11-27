@@ -16,63 +16,199 @@
 </section>
 {% endif %}
 
-<section class="filter-panel">
-    <form method="get" class="row g-2 align-items-end">
-        <div class="col-12 col-md-4">
-            <label class="form-label">جست‌وجو</label>
-            <input type="text" name="q" value="{{ filters.q|default:'' }}" class="form-control" placeholder="عنوان، شهر، محله...">
+<section class="property-search-panel" aria-labelledby="search-title">
+    <div class="search-panel-heading">
+        <div>
+            <span class="search-eyebrow">جست‌وجوی هوشمند فایل‌ها</span>
+            <h1 id="search-title">ملک موردنظرتان را پیدا کنید</h1>
+            <p>با ترکیب معیارهای مختلف، نتایج را دقیق‌تر کنید.</p>
         </div>
-        <div class="col-6 col-md-2">
-            <label class="form-label">نوع معامله</label>
-            <select name="deal_type" class="form-select">
-                <option value="">همه</option>
-                {% for value, label in deal_choices %}
-                <option value="{{ value }}" {% if filters.deal_type == value %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
+        <span class="search-panel-icon" aria-hidden="true">⌕</span>
+    </div>
+
+    <form method="get" action="{% url 'listings:list' %}" class="property-search-form">
+        <div class="search-keyword-field">
+            <label for="property-search-q">عبارت جست‌وجو</label>
+            <div class="search-input-wrap">
+                <span aria-hidden="true">⌕</span>
+                <input id="property-search-q" type="search" name="q"
+                       value="{{ filters.q|default:'' }}" class="form-control"
+                       placeholder="عنوان، استان، شهر، محله، آدرس یا شماره تماس..."
+                       autocomplete="off">
+            </div>
+            <small>می‌توانید چند کلمه وارد کنید؛ همهٔ عبارت‌ها در اطلاعات فایل بررسی می‌شوند.</small>
         </div>
-        <div class="col-6 col-md-2">
-            <label class="form-label">کاربری</label>
-            <select name="usage_type" class="form-select">
-                <option value="">همه</option>
-                {% for value, label in usage_choices %}
-                <option value="{{ value }}" {% if filters.usage_type == value %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-6 col-md-2">
-            <label class="form-label">نوع ملک</label>
-            <select name="property_type" class="form-select">
-                <option value="">همه</option>
-                {% for group_label, options in property_choices_grouped %}
-                <optgroup label="{{ group_label }}">
-                    {% for value, label in options %}
-                    <option value="{{ value }}" {% if filters.property_type == value %}selected{% endif %}>{{ label }}</option>
+
+        <div class="search-basic-grid">
+            <div class="search-field">
+                <label for="filter-deal-type">نوع معامله</label>
+                <select id="filter-deal-type" name="deal_type" class="form-select">
+                    <option value="">همهٔ معاملات</option>
+                    {% for value, label in deal_choices %}
+                    <option value="{{ value }}" {% if filters.deal_type == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
-                </optgroup>
-                {% endfor %}
-            </select>
+                </select>
+            </div>
+            <div class="search-field">
+                <label for="filter-usage-type">کاربری</label>
+                <select id="filter-usage-type" name="usage_type" class="form-select">
+                    <option value="">همهٔ کاربری‌ها</option>
+                    {% for value, label in usage_choices %}
+                    <option value="{{ value }}" {% if filters.usage_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="search-field">
+                <label for="filter-property-type">نوع ملک</label>
+                <select id="filter-property-type" name="property_type" class="form-select">
+                    <option value="">همهٔ انواع ملک</option>
+                    {% for group_label, options in property_choices_grouped %}
+                    <optgroup label="{{ group_label }}">
+                        {% for value, label in options %}
+                        <option value="{{ value }}" {% if filters.property_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </optgroup>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-        <div class="col-6 col-md-2">
-            <label class="form-label">شهر</label>
-            <input type="text" name="city" value="{{ filters.city|default:'' }}" class="form-control" placeholder="مثلاً تهران">
+
+        <div class="search-location-grid">
+            <div class="search-field">
+                <label for="filter-province">استان</label>
+                <input id="filter-province" type="text" name="province" value="{{ filters.province|default:'' }}"
+                       class="form-control" placeholder="مثلاً تهران">
+            </div>
+            <div class="search-field">
+                <label for="filter-city">شهر</label>
+                <input id="filter-city" type="text" name="city" value="{{ filters.city|default:'' }}"
+                       class="form-control" placeholder="مثلاً کرج">
+            </div>
+            <div class="search-field">
+                <label for="filter-neighborhood">محله</label>
+                <input id="filter-neighborhood" type="text" name="neighborhood" value="{{ filters.neighborhood|default:'' }}"
+                       class="form-control" placeholder="مثلاً زعفرانیه">
+            </div>
         </div>
-        <div class="col-6 col-md-2">
-            <label class="form-label">حداقل متراژ</label>
-            <input type="number" min="0" name="min_area" value="{{ filters.min_area|default:'' }}" class="form-control" inputmode="numeric">
+
+        <div class="price-filter-area">
+            <div class="price-filter-heading">
+                <div>
+                    <h2>محدودهٔ قیمت</h2>
+                    <p>نوع بازه بر اساس نوع معامله انتخاب‌شده تغییر می‌کند.</p>
+                </div>
+                <span aria-hidden="true">تومان</span>
+            </div>
+
+            <div id="sale-price-fields" class="price-range-grid" {% if filters.deal_type != 'sale' %}hidden{% endif %}>
+                <div class="search-field">
+                    <label for="price-min">حداقل قیمت کل</label>
+                    <input id="price-min" type="text" inputmode="numeric" name="price_min"
+                           value="{{ filters.price_min|default:'' }}" class="form-control" placeholder="مثلاً ۳٬۰۰۰٬۰۰۰٬۰۰۰">
+                </div>
+                <div class="search-field">
+                    <label for="price-max">حداکثر قیمت کل</label>
+                    <input id="price-max" type="text" inputmode="numeric" name="price_max"
+                           value="{{ filters.price_max|default:'' }}" class="form-control" placeholder="مثلاً ۸٬۰۰۰٬۰۰۰٬۰۰۰">
+                </div>
+            </div>
+
+            <div id="rent-price-fields" class="rent-price-grid" {% if filters.deal_type != 'rent' %}hidden{% endif %}>
+                <div class="search-field">
+                    <label for="deposit-min">حداقل ودیعه</label>
+                    <input id="deposit-min" type="text" inputmode="numeric" name="deposit_min"
+                           value="{{ filters.deposit_min|default:'' }}" class="form-control" placeholder="حداقل ودیعه">
+                </div>
+                <div class="search-field">
+                    <label for="deposit-max">حداکثر ودیعه</label>
+                    <input id="deposit-max" type="text" inputmode="numeric" name="deposit_max"
+                           value="{{ filters.deposit_max|default:'' }}" class="form-control" placeholder="حداکثر ودیعه">
+                </div>
+                <div class="search-field">
+                    <label for="rent-min">حداقل اجارهٔ ماهانه</label>
+                    <input id="rent-min" type="text" inputmode="numeric" name="rent_min"
+                           value="{{ filters.rent_min|default:'' }}" class="form-control" placeholder="حداقل اجاره">
+                </div>
+                <div class="search-field">
+                    <label for="rent-max">حداکثر اجارهٔ ماهانه</label>
+                    <input id="rent-max" type="text" inputmode="numeric" name="rent_max"
+                           value="{{ filters.rent_max|default:'' }}" class="form-control" placeholder="حداکثر اجاره">
+                </div>
+            </div>
+            <p id="price-filter-hint" class="price-filter-hint" {% if filters.deal_type %}hidden{% endif %}>
+                برای نمایش بازهٔ قیمت، ابتدا نوع معامله را روی فروش یا اجاره قرار دهید.
+            </p>
         </div>
-        <div class="col-6 col-md-2">
-            <label class="form-label">حداکثر متراژ</label>
-            <input type="number" min="0" name="max_area" value="{{ filters.max_area|default:'' }}" class="form-control" inputmode="numeric">
-        </div>
-        <div class="col-12 col-md-3 d-flex gap-2">
-            <button type="submit" class="btn-brand flex-fill">جست‌وجو</button>
-            <a href="{% url 'listings:list' %}" class="btn-ghost">پاک‌سازی</a>
+
+        <details class="advanced-filter-details" {% if filters.bedrooms or filters.has_parking or filters.has_elevator or filters.has_storage or filters.has_balcony or filters.is_featured or filters.sort != 'newest' %}open{% endif %}>
+            <summary>
+                <span>فیلترهای تکمیلی</span>
+                <small>تعداد اتاق، امکانات و ترتیب نمایش</small>
+            </summary>
+            <div class="advanced-filter-content">
+                <div class="advanced-control-grid">
+                    <div class="search-field">
+                        <label for="filter-bedrooms">حداقل تعداد اتاق</label>
+                        <select id="filter-bedrooms" name="bedrooms" class="form-select">
+                            <option value="">فرقی ندارد</option>
+                            {% for value in "12345" %}
+                            <option value="{{ value }}" {% if filters.bedrooms == value %}selected{% endif %}>{{ value }} اتاق و بیشتر</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="search-field">
+                        <label for="filter-sort">مرتب‌سازی نتایج</label>
+                        <select id="filter-sort" name="sort" class="form-select">
+                            <option value="newest" {% if sort == 'newest' %}selected{% endif %}>جدیدترین فایل‌ها</option>
+                            <option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>قدیمی‌ترین فایل‌ها</option>
+                            <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>قیمت از کم به زیاد</option>
+                            <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>قیمت از زیاد به کم</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="amenity-filter-list">
+                    <label class="amenity-option">
+                        <input type="checkbox" name="has_parking" value="1" {% if filters.has_parking %}checked{% endif %}>
+                        <span>پارکینگ</span>
+                    </label>
+                    <label class="amenity-option">
+                        <input type="checkbox" name="has_elevator" value="1" {% if filters.has_elevator %}checked{% endif %}>
+                        <span>آسانسور</span>
+                    </label>
+                    <label class="amenity-option">
+                        <input type="checkbox" name="has_storage" value="1" {% if filters.has_storage %}checked{% endif %}>
+                        <span>انباری</span>
+                    </label>
+                    <label class="amenity-option">
+                        <input type="checkbox" name="has_balcony" value="1" {% if filters.has_balcony %}checked{% endif %}>
+                        <span>بالکن</span>
+                    </label>
+                    <label class="amenity-option featured-option">
+                        <input type="checkbox" name="is_featured" value="1" {% if filters.is_featured %}checked{% endif %}>
+                        <span>فقط فایل‌های ویژه</span>
+                    </label>
+                </div>
+            </div>
+        </details>
+
+        <div class="search-form-actions">
+            <button type="submit" class="btn-search-submit">
+                <span aria-hidden="true">⌕</span> اعمال فیلترها و جست‌وجو
+            </button>
+            <a href="{% url 'listings:list' %}" class="btn-search-reset">پاک‌کردن فیلترها</a>
         </div>
     </form>
 </section>
 
-<p class="text-muted small mb-3">{{ count }} فایل یافت شد.</p>
+<div class="results-toolbar">
+    <div>
+        <h2>فایل‌های موجود</h2>
+        <p><strong>{{ count|intcomma }}</strong> فایل مطابق معیارهای جست‌وجوی شما</p>
+    </div>
+    {% if count %}
+    <span class="results-count-badge">{{ count|intcomma }} نتیجه</span>
+    {% endif %}
+</div>
 
 {% if properties %}
 <div class="row g-3">
@@ -124,7 +260,12 @@
     {% endfor %}
 </div>
 {% else %}
-<div class="alert alert-light text-center border">هیچ فایلی با این فیلترها یافت نشد.</div>
+<div class="empty-search-state">
+    <span aria-hidden="true">⌕</span>
+    <h3>فایلی با این مشخصات پیدا نشد</h3>
+    <p>بعضی از فیلترها را تغییر دهید یا جست‌وجوی خود را گسترده‌تر کنید.</p>
+    <a href="{% url 'listings:list' %}" class="btn-search-reset">نمایش همهٔ فایل‌ها</a>
+</div>
 {% endif %}
 
 {% if page_obj.paginator.num_pages > 1 %}
@@ -152,4 +293,25 @@
     </ul>
 </nav>
 {% endif %}
+
+<script>
+(function () {
+    const dealSelect = document.getElementById("filter-deal-type");
+    const saleFields = document.getElementById("sale-price-fields");
+    const rentFields = document.getElementById("rent-price-fields");
+    const hint = document.getElementById("price-filter-hint");
+
+    if (!dealSelect || !saleFields || !rentFields || !hint) return;
+
+    function updatePriceFields() {
+        const value = dealSelect.value;
+        saleFields.hidden = value !== "sale";
+        rentFields.hidden = value !== "rent";
+        hint.hidden = Boolean(value);
+    }
+
+    dealSelect.addEventListener("change", updatePriceFields);
+    updatePriceFields();
+})();
+</script>
 {% endblock %}
