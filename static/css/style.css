@@ -491,9 +491,9 @@ a.contact-value:hover { color: var(--brand); }
 
 /* ---------- Homepage banner: admin-managed image ---------- */
 .home-banner{position:relative;display:flex;align-items:center;min-height:clamp(190px,24vw,310px);margin:0 0 1.4rem;overflow:hidden;isolation:isolate;border:1px solid var(--card-border);border-radius:18px;background:linear-gradient(120deg,#47234f 0%,#8c4f91 100%);box-shadow:0 10px 30px rgba(57,28,67,.13)}
-.home-banner-image{position:absolute;z-index:-2;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
-.home-banner-shade{position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,rgba(21,15,28,.68),rgba(31,19,37,.2) 78%)}
-.home-banner-content{max-width:min(680px,85%);padding:2rem 2.2rem;color:#fff}
+.home-banner-image{position:absolute;z-index:0;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
+.home-banner-shade{position:absolute;z-index:1;inset:0;background:linear-gradient(90deg,rgba(21,15,28,.68),rgba(31,19,37,.2) 78%)}
+.home-banner-content{position:relative;z-index:2;max-width:min(680px,85%);padding:2rem 2.2rem;color:#fff}
 .home-banner-content h2{margin:0 0 .45rem;color:#fff;font-size:clamp(1.2rem,2.5vw,1.8rem);font-weight:700;text-shadow:0 2px 12px rgba(0,0,0,.22)}
 .home-banner-content p{margin:0;color:rgba(255,255,255,.92);font-size:.95rem;line-height:1.9;text-shadow:0 1px 8px rgba(0,0,0,.25)}
 
