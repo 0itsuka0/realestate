@@ -1,6 +1,62 @@
 from django import forms
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django.contrib.auth.models import User
 
+from .admin_permissions import SECTION_PERMISSION_FIELDS, SECTION_PERMISSION_RULES, section_permission_strings
 from .models import Ticket
+
+
+class ManagerPermissionsFormMixin:
+    """Expose one checkbox for each admin section, backed by Django permissions."""
+
+    can_manage_properties = forms.BooleanField(
+        label=SECTION_PERMISSION_RULES["can_manage_properties"]["label"],
+        required=False,
+    )
+    can_manage_contact = forms.BooleanField(
+        label=SECTION_PERMISSION_RULES["can_manage_contact"]["label"],
+        required=False,
+    )
+    can_manage_tickets = forms.BooleanField(
+        label=SECTION_PERMISSION_RULES["can_manage_tickets"]["label"],
+        required=False,
+    )
+    can_manage_site_settings = forms.BooleanField(
+        label=SECTION_PERMISSION_RULES["can_manage_site_settings"]["label"],
+        required=False,
+    )
+    can_view_logs = forms.BooleanField(
+        label=SECTION_PERMISSION_RULES["can_view_logs"]["label"],
+        required=False,
+    )
+    can_manage_sessions = forms.BooleanField(
+        label=SECTION_PERMISSION_RULES["can_manage_sessions"]["label"],
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            granted_permissions = self.instance.get_all_permissions()
+            for field_name in SECTION_PERMISSION_FIELDS:
+                required = set(section_permission_strings(field_name))
+                self.initial[field_name] = required.issubset(granted_permissions)
+
+
+class ManagerCreationForm(ManagerPermissionsFormMixin, UserCreationForm):
+    """Minimal form for creating a staff manager account."""
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ("username",)
+
+
+class ManagerChangeForm(ManagerPermissionsFormMixin, UserChangeForm):
+    """Minimal form for editing a manager and its section permissions."""
+
+    class Meta(UserChangeForm.Meta):
+        model = User
+        fields = ("username", "password")
 
 
 class TicketForm(forms.ModelForm):
