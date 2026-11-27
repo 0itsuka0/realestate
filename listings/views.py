@@ -1,9 +1,10 @@
-from django.contrib import messages
+from django.contrib import admin, messages
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
 
-from .forms import TicketForm
+from .forms import OwnerAccountForm, TicketForm
 from .models import Property
 
 
@@ -246,3 +247,27 @@ def contact_page(request):
         )
 
     return render(request, "listings/contact.html", {"ticket_form": form})
+
+
+
+@admin.site.admin_view
+def owner_account(request):
+    """Let only the superuser edit their own basic account details."""
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
+    if request.method == "POST":
+        form = OwnerAccountForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "اطلاعات حساب مدیر اصلی با موفقیت ذخیره شد.")
+            return redirect("owner_account")
+    else:
+        form = OwnerAccountForm(instance=request.user)
+
+    context = admin.site.each_context(request)
+    context.update({
+        "title": "تنظیمات حساب مدیر اصلی",
+        "form": form,
+    })
+    return render(request, "admin/owner_account.html", context)

@@ -72,6 +72,26 @@ class ManagerChangeForm(ManagerPermissionsFormMixin, UserChangeForm):
         fields = ("username", "password")
 
 
+class OwnerAccountForm(forms.ModelForm):
+    """Allow the site owner to edit only their own basic account details."""
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "first_name", "last_name")
+        labels = {
+            "username": "نام کاربری",
+            "email": "ایمیل",
+            "first_name": "نام",
+            "last_name": "نام خانوادگی",
+        }
+        widgets = {
+            "username": forms.TextInput(attrs={"class": "vTextField", "autocomplete": "username"}),
+            "email": forms.EmailInput(attrs={"class": "vTextField", "autocomplete": "email"}),
+            "first_name": forms.TextInput(attrs={"class": "vTextField", "autocomplete": "given-name"}),
+            "last_name": forms.TextInput(attrs={"class": "vTextField", "autocomplete": "family-name"}),
+        }
+
+
 class TicketForm(forms.ModelForm):
     """Validated public contact form backed by the Ticket model."""
 

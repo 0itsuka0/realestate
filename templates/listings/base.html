@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ site_settings.site_name }}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/bootstrap.rtl.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20261127-7">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20261127-8">
     <script>
         (function () {
             try {
@@ -60,7 +60,7 @@
     </div>
 </header>
 
-<main class="container py-4">
+<main class="container py-4{% if request.resolver_match.url_name == 'list' %} home-main-container{% endif %}">
     {% if messages %}
         {% for m in messages %}
             <div class="alert alert-{{ m.tags|default:'info' }} alert-dismissible fade show" role="alert">

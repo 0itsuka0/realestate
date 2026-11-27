@@ -1,0 +1,37 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div id="content-main" class="owner-account-layout">
+    <section class="owner-account-card">
+        <p class="owner-account-intro">
+            از این بخش می‌توانید اطلاعات پایهٔ حساب مدیر اصلی را تغییر دهید.
+            برای تغییر رمز عبور از دکمهٔ جداگانه استفاده کنید.
+        </p>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="errornote">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="owner-account-grid">
+                {% for field in form %}
+                    <div class="owner-account-field">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.help_text %}<div class="help">{{ field.help_text }}</div>{% endif %}
+                        {% for error in field.errors %}
+                            <div class="owner-account-errors">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="owner-account-actions">
+                <input type="submit" value="ذخیرهٔ تغییرات">
+                <a class="button" href="{% url 'admin:password_change' %}">تغییر رمز عبور</a>
+                <a class="button" href="{% url 'admin:index' %}">بازگشت به داشبورد</a>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

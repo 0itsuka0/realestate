@@ -3,7 +3,7 @@
 {% block title %}{{ title }} | پنل مدیریت املاک{% endblock %}
 {% block extrastyle %}
     {{ block.super }}
-    <link rel="stylesheet" href="{% static 'admin/css/custom_admin.css' %}?v=20261127-3">
+    <link rel="stylesheet" href="{% static 'admin/css/custom_admin.css' %}?v=20261127-4">
 {% endblock %}
 {% block branding %}
 <div class="admin-brand">
@@ -13,4 +13,11 @@
         <span>مدیریت یکپارچهٔ فایل‌ها و محتوای سایت</span>
     </div>
 </div>
+{% endblock %}
+
+{% block userlinks %}
+    {% if user.is_superuser %}
+        <a href="{% url 'owner_account' %}">تنظیمات حساب</a> /
+    {% endif %}
+    {{ block.super }}
 {% endblock %}

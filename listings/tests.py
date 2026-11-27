@@ -63,6 +63,7 @@ class PropertyListViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
         self.assertIn('class="property-page-layout"', content)
+        self.assertIn('home-main-container', content)
         self.assertIn('class="property-search-sidebar"', content)
         self.assertEqual(content.count('<details class="search-accordion-section'), 4)
         detail_tags = [part.split(">", 1)[0] for part in content.split("<details")[1:]]
@@ -385,3 +386,58 @@ class ManagerAdminTests(TestCase):
         self.assertContains(index, "فایل‌های ملکی")
         self.assertNotContains(index, "تیکت‌ها")
         self.assertNotContains(index, "مدیریت مدیران")
+
+
+
+class OwnerAccountTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_superuser(
+            username="rootowner",
+            email="root@example.com",
+            password="Root-Test-Password-2026!",
+        )
+        self.client.force_login(self.owner)
+
+    def test_owner_can_open_account_settings_and_password_change(self):
+        response = self.client.get(reverse("owner_account"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="username"')
+        self.assertContains(response, 'name="email"')
+        self.assertContains(response, reverse("admin:password_change"))
+
+    def test_owner_can_update_basic_account_details_without_changing_privileges(self):
+        response = self.client.post(
+            reverse("owner_account"),
+            {
+                "username": "siteowner",
+                "email": "owner@example.com",
+                "first_name": "Site",
+                "last_name": "Owner",
+                "is_superuser": "",
+                "is_staff": "",
+            },
+        )
+        self.assertRedirects(response, reverse("owner_account"))
+
+        self.owner.refresh_from_db()
+        self.assertEqual(self.owner.username, "siteowner")
+        self.assertEqual(self.owner.email, "owner@example.com")
+        self.assertEqual(self.owner.first_name, "Site")
+        self.assertEqual(self.owner.last_name, "Owner")
+        self.assertTrue(self.owner.is_superuser)
+        self.assertTrue(self.owner.is_staff)
+
+    def test_regular_staff_manager_cannot_open_owner_account_settings(self):
+        manager = User.objects.create_user(
+            username="ordinarymanager",
+            password="Manager-Test-Password-2026!",
+            is_staff=True,
+        )
+        self.client.force_login(manager)
+        response = self.client.get(reverse("owner_account"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_owner_can_use_django_password_change_view(self):
+        response = self.client.get(reverse("admin:password_change"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="old_password"')

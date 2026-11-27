@@ -581,3 +581,16 @@ a.contact-value:hover { color: var(--brand); }
  .property-search-panel .search-fields-layout .search-basic-grid,.property-search-panel .search-fields-layout .search-location-grid,.property-search-panel .price-range-grid,.property-search-panel .rent-price-grid,.property-search-panel .advanced-control-grid,.property-search-panel .amenity-filter-list{grid-template-columns:minmax(0,1fr)!important}
  .property-search-panel .search-fields-layout .search-field:nth-child(3){grid-column:auto}
 }
+
+
+/* Slightly wider content area on the homepage so property cards have more room. */
+@media (min-width: 1200px) {
+    .home-main-container {
+        max-width: min(1200px, calc(100% - 32px));
+    }
+}
+@media (min-width: 1400px) {
+    .home-main-container {
+        max-width: min(1380px, calc(100% - 40px));
+    }
+}
