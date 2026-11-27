@@ -207,7 +207,10 @@ class ManagerAdminTests(TestCase):
     def test_superuser_is_not_listed_as_a_manager(self):
         response = self.client.get(reverse("admin:auth_user_changelist"))
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "rootadmin")
+        listed_usernames = [
+            user.username for user in response.context["cl"].result_list
+        ]
+        self.assertNotIn("rootadmin", listed_usernames)
 
     def test_manager_permissions_control_direct_admin_urls_and_menu(self):
         manager = User.objects.create_user(
