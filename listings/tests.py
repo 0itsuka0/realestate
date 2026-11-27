@@ -65,7 +65,8 @@ class PropertyListViewTests(TestCase):
         self.assertIn('class="property-page-layout"', content)
         self.assertIn('class="property-search-sidebar"', content)
         self.assertEqual(content.count('<details class="search-accordion-section'), 4)
-        self.assertNotRegex(content, r'<details\\b[^>]*\\bopen(?:\\s|>)')
+        detail_tags = [part.split(">", 1)[0] for part in content.split("<details")[1:]]
+        self.assertTrue(all(" open" not in tag for tag in detail_tags))
 
     def test_admin_configured_homepage_banner_image_is_rendered_before_search(self):
         SiteSettings.objects.update_or_create(
