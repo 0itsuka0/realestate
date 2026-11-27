@@ -140,7 +140,7 @@
             </p>
         </div>
 
-        <details class="advanced-filter-details" {% if filters.bedrooms or filters.has_parking or filters.has_elevator or filters.has_storage or filters.has_balcony or filters.is_featured or filters.sort != 'newest' %}open{% endif %}>
+        <details class="advanced-filter-details" {% if filters.bedrooms or filters.has_parking or filters.has_elevator or filters.has_storage or filters.has_balcony or filters.is_featured or filters.sort == 'oldest' or filters.sort == 'price_asc' or filters.sort == 'price_desc' %}open{% endif %}>
             <summary>
                 <span>فیلترهای تکمیلی</span>
                 <small>تعداد اتاق، امکانات و ترتیب نمایش</small>
