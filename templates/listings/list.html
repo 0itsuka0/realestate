@@ -39,7 +39,8 @@
             <small>می‌توانید چند کلمه وارد کنید؛ همهٔ عبارت‌ها در اطلاعات فایل بررسی می‌شوند.</small>
         </div>
 
-        <div class="search-basic-grid">
+        <div class="search-fields-layout">
+            <div class="search-basic-grid">
             <div class="search-field">
                 <label for="filter-deal-type">نوع معامله</label>
                 <select id="filter-deal-type" name="deal_type" class="form-select">
@@ -89,6 +90,8 @@
                 <input id="filter-neighborhood" type="text" name="neighborhood" value="{{ filters.neighborhood|default:'' }}"
                        class="form-control" placeholder="مثلاً زعفرانیه">
             </div>
+        </div>
+
         </div>
 
         <div class="price-filter-area">

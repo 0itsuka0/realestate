@@ -355,3 +355,136 @@ a.contact-value:hover { color: var(--brand); }
     .search-form-actions > * { flex: 1 1 100%; }
     .results-toolbar { align-items: flex-start; }
 }
+
+
+/* ---------- Refined search layout: aligned, responsive filter grid ---------- */
+.property-search-panel .property-search-form {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start;
+    gap: 1.05rem;
+}
+.property-search-panel .search-keyword-field {
+    grid-column: 1 / -1;
+    min-width: 0;
+}
+.property-search-panel .search-fields-layout {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    align-items: end;
+    column-gap: 1rem;
+    row-gap: .9rem;
+}
+.property-search-panel .search-basic-grid,
+.property-search-panel .search-location-grid {
+    display: contents !important;
+}
+.property-search-panel .search-fields-layout .search-field {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: .4rem;
+    min-width: 0;
+    width: 100%;
+    margin: 0;
+}
+.property-search-panel .search-fields-layout .search-field > label {
+    display: block;
+    min-height: 1.35rem;
+    margin: 0;
+    line-height: 1.5;
+}
+.property-search-panel .search-fields-layout .form-control,
+.property-search-panel .search-fields-layout .form-select {
+    display: block;
+    width: 100% !important;
+    min-width: 0;
+    min-height: 46px;
+    margin: 0;
+}
+.property-search-panel .price-filter-area {
+    width: 100%;
+    min-width: 0;
+}
+.property-search-panel .price-range-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .85rem;
+}
+.property-search-panel .rent-price-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: .85rem;
+}
+.property-search-panel .advanced-filter-details {
+    width: 100%;
+}
+.property-search-panel .advanced-control-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .9rem;
+}
+.property-search-panel .amenity-filter-list {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: .65rem;
+}
+.property-search-panel .amenity-option {
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 43px;
+    min-width: 0;
+    margin: 0;
+    white-space: nowrap;
+}
+.property-search-panel .amenity-option input {
+    flex: 0 0 auto;
+    margin: 0;
+}
+.property-search-panel .search-form-actions {
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-start;
+    gap: .75rem;
+    flex-wrap: wrap;
+}
+.property-search-panel .search-form-actions > * {
+    flex: 0 0 auto !important;
+}
+
+@media (max-width: 991.98px) {
+    .property-search-panel .search-fields-layout {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    .property-search-panel .rent-price-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    .property-search-panel .amenity-filter-list {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+}
+@media (max-width: 575.98px) {
+    .property-search-panel {
+        padding: 1rem;
+    }
+    .property-search-panel .search-fields-layout,
+    .property-search-panel .price-range-grid,
+    .property-search-panel .rent-price-grid,
+    .property-search-panel .advanced-control-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+    .property-search-panel .amenity-filter-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    .property-search-panel .search-fields-layout .search-field > label {
+        min-height: 0;
+    }
+    .property-search-panel .search-form-actions {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .property-search-panel .search-form-actions > * {
+        width: 100%;
+    }
+}
