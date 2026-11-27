@@ -1,7 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 
 
 # ---------- فایل ملکی ----------
@@ -174,34 +171,6 @@ class PropertyVideo(models.Model):
 
     def __str__(self):
         return self.title or f"ویدیو {self.id}"
-
-
-# ---------- نقش کاربر ادمین ----------
-class UserProfile(models.Model):
-    ROLE_SUPER = 'super'
-    ROLE_PROPERTY = 'property'
-    ROLE_TICKET = 'ticket'
-    ROLE_CONTENT = 'content'
-    ROLE_CHOICES = [
-        (ROLE_SUPER, 'مدیر ارشد — دسترسی کامل'),
-        (ROLE_PROPERTY, 'مدیر املاک — فقط فایل‌های ملکی'),
-        (ROLE_TICKET, 'مدیر تیکت‌ها'),
-        (ROLE_CONTENT, 'مدیر محتوا — تنظیمات، تماس، شبکه‌ها'),
-    ]
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_PROPERTY, verbose_name='نقش')
-
-    class Meta:
-        verbose_name = 'نقش کاربر'
-        verbose_name_plural = 'نقش کاربران'
-
-    def __str__(self):
-        return f"{self.user.username} — {self.get_role_display()}"
-
-
-@receiver(post_save, sender=User)
-def _ensure_profile(sender, instance, **kwargs):
-    UserProfile.objects.get_or_create(user=instance)
 
 
 # ---------- تنظیمات سایت ----------
