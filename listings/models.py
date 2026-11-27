@@ -120,6 +120,10 @@ class Property(models.Model):
 
     @property
     def main_image(self):
+        # Use the prefetch cache when available to avoid one query per property card.
+        prefetched = getattr(self, "_prefetched_objects_cache", {}).get("images")
+        if prefetched is not None:
+            return prefetched[0].image if prefetched else None
         first = self.images.first()
         return first.image if first else None
 
