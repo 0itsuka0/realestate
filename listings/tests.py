@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from .forms import TicketForm
-from .models import Property, Ticket
+from .models import Property, SiteSettings, Ticket
 
 
 class PropertyModelTests(TestCase):
@@ -57,6 +57,31 @@ class PropertyListViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["count"], 13)
         self.assertNotContains(response, "ملک فروخته‌شده")
+
+    def test_homepage_has_right_sidebar_and_four_collapsed_search_groups(self):
+        response = self.client.get(reverse("listings:list"))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn('class="property-page-layout"', content)
+        self.assertIn('class="property-search-sidebar"', content)
+        self.assertEqual(content.count('<details class="search-accordion-section'), 4)
+        self.assertNotRegex(content, r'<details\\b[^>]*\\bopen(?:\\s|>)')
+
+    def test_admin_configured_homepage_banner_image_is_rendered_before_search(self):
+        SiteSettings.objects.update_or_create(
+            pk=1,
+            defaults={
+                "site_name": "املاک آزمایشی",
+                "banner_image": "site/banners/home-test.jpg",
+                "banner_title": "بنر آزمایشی",
+                "banner_subtitle": "زیرعنوان بنر",
+            },
+        )
+        response = self.client.get(reverse("listings:list"))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn('src="/media/site/banners/home-test.jpg"', content)
+        self.assertLess(content.index('class="home-banner"'), content.index('class="property-search-panel"'))
 
     def test_listing_is_paginated(self):
         response = self.client.get(reverse("listings:list"), {"page": "2"})
