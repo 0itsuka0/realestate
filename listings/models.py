@@ -1,7 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 
 
 # ---------- فایل ملکی ----------
@@ -120,6 +117,10 @@ class Property(models.Model):
 
     @property
     def main_image(self):
+        # Use the prefetch cache when available to avoid one query per property card.
+        prefetched = getattr(self, "_prefetched_objects_cache", {}).get("images")
+        if prefetched is not None:
+            return prefetched[0].image if prefetched else None
         first = self.images.first()
         return first.image if first else None
 
@@ -170,34 +171,6 @@ class PropertyVideo(models.Model):
 
     def __str__(self):
         return self.title or f"ویدیو {self.id}"
-
-
-# ---------- نقش کاربر ادمین ----------
-class UserProfile(models.Model):
-    ROLE_SUPER = 'super'
-    ROLE_PROPERTY = 'property'
-    ROLE_TICKET = 'ticket'
-    ROLE_CONTENT = 'content'
-    ROLE_CHOICES = [
-        (ROLE_SUPER, 'مدیر ارشد — دسترسی کامل'),
-        (ROLE_PROPERTY, 'مدیر املاک — فقط فایل‌های ملکی'),
-        (ROLE_TICKET, 'مدیر تیکت‌ها'),
-        (ROLE_CONTENT, 'مدیر محتوا — تنظیمات، تماس، شبکه‌ها'),
-    ]
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_PROPERTY, verbose_name='نقش')
-
-    class Meta:
-        verbose_name = 'نقش کاربر'
-        verbose_name_plural = 'نقش کاربران'
-
-    def __str__(self):
-        return f"{self.user.username} — {self.get_role_display()}"
-
-
-@receiver(post_save, sender=User)
-def _ensure_profile(sender, instance, **kwargs):
-    UserProfile.objects.get_or_create(user=instance)
 
 
 # ---------- تنظیمات سایت ----------
@@ -268,16 +241,37 @@ class ContactItem(models.Model):
     TYPE_HOURS = 'hours'
     TYPE_CUSTOM = 'custom'
     TYPE_CHOICES = [
-        (TYPE_PHONE, 'تلفن ثابت'), (TYPE_MOBILE, 'همراه'),
-        (TYPE_EMAIL, 'ایمیل'), (TYPE_ADDRESS, 'آدرس'),
-        (TYPE_FAX, 'فکس'), (TYPE_HOURS, 'ساعات کاری'),
+        (TYPE_PHONE, 'تلفن ثابت'),
+        (TYPE_MOBILE, 'تلفن همراه'),
+        (TYPE_EMAIL, 'ایمیل'),
+        (TYPE_ADDRESS, 'آدرس'),
+        (TYPE_FAX, 'فکس'),
+        (TYPE_HOURS, 'ساعات کاری'),
+        ('website', 'وب‌سایت'),
+        ('map', 'نقشه و مسیریابی'),
+        ('building', 'ساختمان و دفتر'),
+        ('support', 'پشتیبانی'),
+        ('message', 'پیام'),
+        ('whatsapp', 'واتساپ'),
+        ('telegram', 'تلگرام'),
+        ('instagram', 'اینستاگرام'),
+        ('calendar', 'تقویم و زمان مراجعه'),
+        ('user', 'شخص پاسخ‌گو'),
+        ('info', 'اطلاعات'),
+        ('briefcase', 'امور اداری'),
+        ('store', 'شعبه و فروشگاه'),
+        ('link', 'پیوند'),
+        ('clock', 'زمان'),
+        ('mail', 'صندوق پستی'),
+        ('phone-alt', 'تماس فوری'),
+        ('location', 'موقعیت مکانی'),
+        ('headset', 'مرکز تماس'),
+        ('video', 'تماس تصویری'),
+        ('globe', 'آدرس اینترنتی'),
         (TYPE_CUSTOM, 'سایر'),
     ]
-    ICONS = {
-        TYPE_PHONE: '📞', TYPE_MOBILE: '📱', TYPE_EMAIL: '✉️',
-        TYPE_ADDRESS: '📍', TYPE_FAX: '📠', TYPE_HOURS: '🕒', TYPE_CUSTOM: '•',
-    }
-    item_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_CUSTOM, verbose_name='نوع')
+    ICONS = {value: value for value, _label in TYPE_CHOICES}
+    item_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_CUSTOM, verbose_name='آیکن')
     label = models.CharField(max_length=100, verbose_name='عنوان نمایشی')
     value = models.CharField(max_length=300, verbose_name='مقدار')
     link = models.CharField(max_length=300, blank=True, verbose_name='لینک')
@@ -294,7 +288,7 @@ class ContactItem(models.Model):
 
     @property
     def icon(self):
-        return self.ICONS.get(self.item_type, '•')
+        return self.ICONS.get(self.item_type, 'info')
 
 
 # ---------- شبکه‌های اجتماعی ----------
@@ -304,16 +298,21 @@ class SocialLink(models.Model):
         related_name='social_links', verbose_name='صفحهٔ تماس'
     )
     PLATFORM_CHOICES = [
-        ('instagram', 'اینستاگرام'), ('telegram', 'تلگرام'),
-        ('whatsapp', 'واتساپ'), ('x', 'X (توییتر)'),
-        ('linkedin', 'لینکدین'), ('youtube', 'یوتیوب'),
-        ('aparat', 'آپارات'), ('facebook', 'فیسبوک'),
+        ('instagram', 'اینستاگرام'),
+        ('telegram', 'تلگرام'),
+        ('whatsapp', 'واتساپ'),
+        ('x', 'X (توییتر)'),
+        ('linkedin', 'لینکدین'),
+        ('youtube', 'یوتیوب'),
+        ('aparat', 'آپارات'),
+        ('facebook', 'فیسبوک'),
+        ('eitaa', 'ایتا'),
+        ('soroush', 'سروش'),
+        ('bale', 'بله'),
+        ('rubika', 'روبیکا'),
+        ('shad', 'شاد'),
     ]
-    ICONS = {
-        'instagram': '📷', 'telegram': '✈️', 'whatsapp': '💬',
-        'x': '𝕏', 'linkedin': '💼', 'youtube': '▶️',
-        'aparat': '🎬', 'facebook': '📘',
-    }
+    ICONS = {value: value for value, _label in PLATFORM_CHOICES}
     platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES, verbose_name='پلتفرم')
     url = models.URLField(verbose_name='لینک')
     order = models.PositiveIntegerField(default=0, verbose_name='ترتیب')
@@ -329,7 +328,7 @@ class SocialLink(models.Model):
 
     @property
     def icon(self):
-        return self.ICONS.get(self.platform, '🔗')
+        return self.ICONS.get(self.platform, 'link')
 
 
 # ---------- تیکت ----------

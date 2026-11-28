@@ -1,4 +1,5 @@
 {% extends "listings/base.html" %}
+{% load static %}
 {% block title %}اطلاعات تماس — {{ site_settings.site_name }}{% endblock %}
 
 {% block content %}
@@ -26,7 +27,11 @@
             <div class="contact-list">
                 {% for item in contact_items %}
                 <div class="contact-item">
-                    <div class="contact-icon">{{ item.icon }}</div>
+                    <div class="contact-icon" aria-hidden="true">
+                        <svg class="contact-icon-svg" viewBox="0 0 24 24" focusable="false">
+                            <use href="{% static 'images/contact-icons.svg' %}#{{ item.icon }}"></use>
+                        </svg>
+                    </div>
                     <div class="contact-body">
                         <span class="contact-label">{{ item.label }}</span>
                         {% if item.link %}
@@ -46,8 +51,10 @@
             <h2 class="section-title">شبکه‌های اجتماعی</h2>
             <div class="social-grid">
                 {% for s in social_links %}
-                <a href="{{ s.url }}" target="_blank" rel="noopener" class="social-btn" title="{{ s.get_platform_display }}">
-                    <span class="social-icon">{{ s.icon }}</span>
+                <a href="{{ s.url }}" target="_blank" rel="noopener noreferrer" class="social-btn" title="{{ s.get_platform_display }}">
+                    <svg class="social-icon" role="img" aria-label="{{ s.get_platform_display }}" viewBox="0 0 48 48" focusable="false">
+                        <use href="{% static 'images/social-icons.svg' %}#{{ s.icon }}"></use>
+                    </svg>
                     <span class="social-name">{{ s.get_platform_display }}</span>
                 </a>
                 {% endfor %}
@@ -63,30 +70,22 @@
             <h2 class="section-title">ارسال پیام / تیکت</h2>
             <p class="text-muted small">پیام شما مستقیماً به مدیران ارسال می‌شود.</p>
 
-            <form method="post" action="{% url 'listings:contact' %}">
+            <form method="post" action="{% url 'listings:contact' %}" novalidate>
                 {% csrf_token %}
                 <input type="text" name="website" class="d-none" tabindex="-1" autocomplete="off">
 
+                {% for field in ticket_form %}
                 <div class="mb-3">
-                    <label class="form-label">نام و نام خانوادگی <span class="text-danger">*</span></label>
-                    <input type="text" name="name" class="form-control" required>
+                    <label class="form-label" for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                    <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">شماره تماس <span class="text-danger">*</span></label>
-                    <input type="tel" name="phone" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">ایمیل (اختیاری)</label>
-                    <input type="email" name="email" class="form-control">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">موضوع <span class="text-danger">*</span></label>
-                    <input type="text" name="subject" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">پیام <span class="text-danger">*</span></label>
-                    <textarea name="message" class="form-control" rows="5" required></textarea>
-                </div>
+                {% endfor %}
                 <button type="submit" class="btn-brand w-100">ارسال پیام</button>
             </form>
         </div>

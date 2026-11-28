@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+{% load static %}
+{% block title %}{{ title }} | پنل مدیریت املاک{% endblock %}
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'admin/css/custom_admin.css' %}?v=20261128-4">
+{% endblock %}
+{% block branding %}
+<div class="admin-brand">
+    <a href="{% url 'admin:index' %}" class="admin-brand-mark" aria-label="صفحهٔ اصلی مدیریت">ا</a>
+    <div class="admin-brand-copy">
+        <h1 id="site-name"><a href="{% url 'admin:index' %}">پنل مدیریت املاک</a></h1>
+        <span>مدیریت یکپارچهٔ فایل‌ها و محتوای سایت</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block userlinks %}
+    {% if user.is_superuser %}
+        <a href="{% url 'owner_account' %}">تنظیمات حساب</a> /
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

@@ -1,5 +1,5 @@
 {% extends "listings/base.html" %}
-{% load humanize %}
+{% load number_filters %}
 {% block title %}{{ property.title }} — {{ site_settings.site_name }}{% endblock %}
 
 {% block content %}
@@ -39,16 +39,16 @@
             <div class="price-box">
                 {% if property.deal_type == 'sale' %}
                     {% if property.price %}
-                        <div class="price-main">{{ property.price|intcomma }} <small>تومان</small></div>
+                        <div class="price-main"><bdi dir="ltr">{{ property.price|persian_intcomma }}</bdi> <small>تومان</small></div>
                         {% if property.price_per_meter %}
-                            <div class="price-sub">{{ property.price_per_meter|intcomma }} تومان هر متر</div>
+                            <div class="price-sub"><bdi dir="ltr">{{ property.price_per_meter|persian_intcomma }}</bdi> تومان هر متر</div>
                         {% endif %}
                     {% else %}
                         <div class="text-muted">قیمت ثبت نشده</div>
                     {% endif %}
                 {% elif property.deal_type == 'rent' %}
-                    {% if property.deposit %}<div class="price-row">ودیعه: <strong>{{ property.deposit|intcomma }}</strong> تومان</div>{% endif %}
-                    {% if property.rent %}<div class="price-row">اجاره: <strong>{{ property.rent|intcomma }}</strong> تومان</div>{% endif %}
+                    {% if property.deposit %}<div class="price-row">ودیعه: <strong><bdi dir="ltr">{{ property.deposit|persian_intcomma }}</bdi></strong> تومان</div>{% endif %}
+                    {% if property.rent %}<div class="price-row">اجاره: <strong><bdi dir="ltr">{{ property.rent|persian_intcomma }}</bdi></strong> تومان</div>{% endif %}
                     {% if property.deposit and property.rent %}
                         {% if property.is_convertible %}
                             <div class="price-sub">ودیعه و اجاره قابل تبدیل</div>
@@ -105,42 +105,109 @@
     </div>
 
     <div class="col-12 col-lg-7 order-1 order-lg-2">
-        <div class="gallery">
+        <section class="gallery" data-property-gallery aria-label="رسانه‌های فایل ملکی">
+            <div class="gallery-heading">
+                <div>
+                    <span class="gallery-eyebrow">گالری رسانه</span>
+                </div>
+                {% if media_items %}<span class="gallery-total">{{ media_items|length }} رسانه</span>{% endif %}
+            </div>
             {% if media_items %}
-            <div class="gallery-main">
+            <div class="gallery-stage" data-gallery-stage tabindex="0" role="region"
+                 aria-label="گالری تصاویر و ویدئوها" aria-roledescription="carousel">
                 {% for m in media_items %}
-                <div class="gallery-item {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}">
+                <div id="gallery-slide-{{ forloop.counter0 }}"
+                     class="gallery-item {% if forloop.first %}active{% endif %}"
+                     data-index="{{ forloop.counter0 }}" data-caption="{{ m.caption }}"
+                     data-kind="{% if m.type == 'image' %}image{% else %}video{% endif %}"
+                     role="group" aria-roledescription="slide"
+                     aria-label="{{ forloop.counter }} از {{ media_items|length }}"
+                     aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}">
                     {% if m.type == 'image' %}
-                        <img src="{{ m.url }}" alt="{{ m.caption }}">
-                    {% elif m.type == 'video' %}
-                        <video controls playsinline><source src="{{ m.url }}"></video>
+                        <img src="{{ m.url }}" alt="{{ m.caption|default:property.title }}"
+                             decoding="async" draggable="false">
+                    {% elif m.type == 'video' or m.is_direct_video %}
+                        <video controls playsinline preload="metadata"
+                               {% if m.poster %}poster="{{ m.poster }}"{% endif %}
+                               aria-label="{{ m.caption|default:'ویدئوی فایل ملکی' }}">
+                            <source src="{{ m.url }}">
+                        </video>
+                    {% elif m.embed_url %}
+                        <iframe src="{{ m.embed_url }}"
+                                title="{{ m.caption|default:'ویدئوی فایل ملکی' }}"
+                                loading="lazy" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen"
+                                allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
                     {% else %}
                         <div class="video-link-wrap">
-                            <a href="{{ m.url }}" target="_blank" rel="noopener" class="video-open">▶ مشاهدهٔ ویدیو</a>
+                            {% if m.poster %}<img class="video-link-poster" src="{{ m.poster }}" alt="" loading="lazy">{% endif %}
+                            <a href="{{ m.url }}" target="_blank" rel="noopener noreferrer" class="video-open">
+                                <span aria-hidden="true">↗</span><strong>بازکردن ویدئو</strong>
+                                <small>این رسانه در صفحه‌ای جداگانه باز می‌شود</small>
+                            </a>
                         </div>
                     {% endif %}
+                    <span class="gallery-kind-badge">{% if m.type == 'image' %}تصویر{% else %}ویدئو{% endif %}</span>
                 </div>
                 {% endfor %}
-            </div>
-            <div class="gallery-thumbs">
-                {% for m in media_items %}
-                <button type="button" class="gallery-thumb {% if forloop.first %}active{% endif %}" data-target="{{ forloop.counter0 }}">
-                    {% if m.type == 'image' %}
-                        <img src="{{ m.url }}" alt="">
-                    {% elif m.poster %}
-                        <img src="{{ m.poster }}" alt="">
-                        <span class="thumb-video-icon">▶</span>
-                    {% else %}
-                        <span class="thumb-video-icon">▶</span>
-                        <span class="thumb-video-label">ویدیو</span>
-                    {% endif %}
+                {% if media_items|length > 1 %}
+                <button type="button" class="gallery-nav gallery-prev" data-gallery-prev
+                        aria-label="رسانهٔ قبلی" title="رسانهٔ قبلی">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
                 </button>
-                {% endfor %}
+                <button type="button" class="gallery-nav gallery-next" data-gallery-next
+                        aria-label="رسانهٔ بعدی" title="رسانهٔ بعدی">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+                </button>
+                {% endif %}
+                <div class="gallery-counter" aria-live="polite" aria-atomic="true">
+                    <span data-gallery-current>۱</span><span class="gallery-counter-divider">/</span>
+                    <span>{{ media_items|length }}</span>
+                </div>
+                <button type="button" class="gallery-fullscreen" data-gallery-fullscreen
+                        aria-label="نمایش تمام‌صفحه" title="نمایش تمام‌صفحه">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="gallery-caption" aria-live="polite" {% if not media_items.0.caption %}hidden{% endif %}>
+                <span class="gallery-caption-label">توضیح رسانه</span>
+                <p data-gallery-caption>{{ media_items.0.caption }}</p>
+            </div>
+            <div class="gallery-thumbs-wrap">
+                <div class="gallery-thumbs-heading"><span>انتخاب رسانه</span></div>
+                <div class="gallery-thumbs" role="tablist" aria-label="انتخاب تصویر یا ویدئو">
+                    {% for m in media_items %}
+                    <button type="button" role="tab"
+                            class="gallery-thumb {% if forloop.first %}active{% endif %}"
+                            id="gallery-thumb-{{ forloop.counter0 }}"
+                            aria-controls="gallery-slide-{{ forloop.counter0 }}"
+                            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                            tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+                            aria-label="نمایش {% if m.type == 'image' %}تصویر{% else %}ویدئو{% endif %} {{ forloop.counter }}"
+                            title="{% if m.caption %}{{ m.caption }}{% else %}{% if m.type == 'image' %}تصویر{% else %}ویدئو{% endif %} {{ forloop.counter }}{% endif %}"
+                            data-target="{{ forloop.counter0 }}">
+                        {% if m.type == 'image' %}
+                            <img src="{{ m.url }}" alt="" loading="lazy" decoding="async">
+                        {% elif m.poster %}
+                            <img src="{{ m.poster }}" alt="" loading="lazy" decoding="async">
+                            <span class="thumb-video-icon" aria-hidden="true">▶</span>
+                        {% else %}
+                            <span class="thumb-video-icon thumb-video-placeholder" aria-hidden="true">▶</span>
+                            <span class="thumb-video-label">ویدئو</span>
+                        {% endif %}
+                    </button>
+                    {% endfor %}
+                </div>
             </div>
             {% else %}
-            <div class="gallery-empty">تصویری ثبت نشده است.</div>
+            <div class="gallery-empty">
+                <span class="gallery-empty-icon" aria-hidden="true">▧</span>
+                <strong>رسانه‌ای برای این فایل ثبت نشده است</strong>
+                <p>تصاویر و ویدئوهای ملک در این بخش نمایش داده می‌شوند.</p>
+            </div>
             {% endif %}
-        </div>
+        </section>
     </div>
 
 </div>

@@ -1,0 +1,55 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+{% block content %}
+<div id="content-main" class="admin-dashboard">
+    <section class="dashboard-welcome">
+        <div>
+            <span class="dashboard-eyebrow">داشبورد مدیریتی</span>
+            <h2>خوش آمدید</h2>
+            <p>از اینجا می‌توانید بخش‌های مختلف سامانهٔ املاک را مدیریت کنید.</p>
+        </div>
+        <span class="dashboard-welcome-mark" aria-hidden="true">ا</span>
+    </section>
+
+    {% if app_list %}
+        {% for app in app_list %}
+        <section class="dashboard-section">
+            <div class="dashboard-section-heading">
+                <div>
+                    <span class="dashboard-section-kicker">بخش مدیریت</span>
+                    <h2>{{ app.name }}</h2>
+                </div>
+                <span class="dashboard-section-count">{{ app.models|length }} بخش</span>
+            </div>
+            <div class="dashboard-card-grid">
+                {% for model in app.models %}
+                <article class="dashboard-model-card">
+                    <div class="dashboard-card-top">
+                        <span class="dashboard-card-icon" aria-hidden="true">{{ forloop.counter }}</span>
+                        {% if model.add_url %}<span class="dashboard-card-capability">امکان افزودن</span>{% endif %}
+                    </div>
+                    <h3>
+                        {% if model.admin_url %}
+                        <a href="{{ model.admin_url }}">{{ model.name }}</a>
+                        {% else %}
+                        {{ model.name }}
+                        {% endif %}
+                    </h3>
+                    <p>مشاهده و مدیریت اطلاعات این بخش</p>
+                    <div class="dashboard-card-actions">
+                        {% if model.admin_url %}<a href="{{ model.admin_url }}">ورود به بخش <span aria-hidden="true">←</span></a>{% endif %}
+                        {% if model.add_url %}<a class="dashboard-add-link" href="{{ model.add_url }}">افزودن مورد</a>{% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+    {% else %}
+        <div class="dashboard-empty">
+            <h2>بخشی برای نمایش وجود ندارد</h2>
+            <p>حساب کاربری شما در حال حاضر به هیچ بخش مدیریتی دسترسی ندارد.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
