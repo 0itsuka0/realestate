@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from .forms import TicketForm
-from .models import Property, SiteSettings, Ticket
+from .models import ContactItem, Property, SiteSettings, SocialLink, Ticket
 
 
 class PropertyModelTests(TestCase):
@@ -431,17 +431,23 @@ class OwnerAccountTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'name="username"')
         self.assertContains(response, 'name="email"')
+        self.assertNotContains(response, 'name="first_name"')
+        self.assertNotContains(response, 'name="last_name"')
         self.assertContains(response, reverse("admin:password_change"))
         self.assertContains(response, 'class="button button-primary"')
 
-    def test_owner_can_update_basic_account_details_without_changing_privileges(self):
+    def test_owner_can_update_username_and_email_without_changing_other_account_data(self):
+        self.owner.first_name = "Existing"
+        self.owner.last_name = "Owner Name"
+        self.owner.save(update_fields=["first_name", "last_name"])
+
         response = self.client.post(
             reverse("owner_account"),
             {
                 "username": "siteowner",
                 "email": "owner@example.com",
-                "first_name": "Site",
-                "last_name": "Owner",
+                "first_name": "Should Not Be Saved",
+                "last_name": "Should Not Be Saved",
                 "is_superuser": "",
                 "is_staff": "",
             },
@@ -451,8 +457,8 @@ class OwnerAccountTests(TestCase):
         self.owner.refresh_from_db()
         self.assertEqual(self.owner.username, "siteowner")
         self.assertEqual(self.owner.email, "owner@example.com")
-        self.assertEqual(self.owner.first_name, "Site")
-        self.assertEqual(self.owner.last_name, "Owner")
+        self.assertEqual(self.owner.first_name, "Existing")
+        self.assertEqual(self.owner.last_name, "Owner Name")
         self.assertTrue(self.owner.is_superuser)
         self.assertTrue(self.owner.is_staff)
 
@@ -616,3 +622,39 @@ class PropertyDetailNumberTests(TestCase):
         self.assertContains(rent_response, "تومان")
         self.assertContains(sale_response, "js/main.js")
         self.assertContains(rent_response, "js/main.js")
+
+
+
+class ContactManagementInterfaceTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_superuser(
+            username="contactowner",
+            email="contactowner@example.com",
+            password="Contact-Owner-Password-2026!",
+        )
+        self.client.force_login(self.owner)
+
+    def test_contact_admin_renders_local_visual_icon_selector(self):
+        response = self.client.get(
+            reverse("admin:listings_contactpage_changelist"),
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "contact_icon_picker.js")
+        self.assertContains(response, "contact-icon-select")
+        self.assertContains(response, "data-icon-sprite")
+        self.assertContains(response, 'data-icon="headset"')
+        self.assertContains(response, "تقویم و زمان مراجعه")
+
+    def test_contact_item_icon_choices_include_varied_contact_categories(self):
+        choices = dict(ContactItem.TYPE_CHOICES)
+        for value in ("phone", "mobile", "email", "address", "website", "map", "support", "headset", "video"):
+            self.assertIn(value, choices)
+
+    def test_social_platform_choices_include_requested_local_messengers(self):
+        choices = dict(SocialLink.PLATFORM_CHOICES)
+        self.assertEqual(choices["eitaa"], "ایتا")
+        self.assertEqual(choices["soroush"], "سروش")
+        self.assertEqual(choices["bale"], "بله")
+        self.assertEqual(choices["rubika"], "روبیکا")
+        self.assertEqual(choices["shad"], "شاد")

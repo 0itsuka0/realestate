@@ -998,3 +998,76 @@ html[data-theme="dark"] { --admin-button-ink: #2b2031; }
     }
     #changelist-filter > details[open] { flex-basis: 100%; }
 }
+
+
+/* ---------- Contact item icon chooser ---------- */
+.contact-icon-select-enhanced {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+.contact-icon-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+    gap: 6px;
+    min-width: 340px;
+    max-width: 540px;
+    padding: 5px 0;
+}
+.contact-icon-choice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 66px;
+    padding: 6px 4px;
+    border: 1px solid var(--admin-line);
+    border-radius: 9px;
+    background: var(--admin-surface-soft);
+    color: var(--admin-muted);
+    font: inherit;
+    font-size: .66rem;
+    line-height: 1.35;
+    cursor: pointer;
+    transition: border-color .14s ease, background .14s ease, color .14s ease, transform .14s ease;
+}
+.contact-icon-choice svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+    color: var(--admin-ink);
+}
+.contact-icon-choice:hover {
+    border-color: var(--admin-brand);
+    color: var(--admin-brand);
+    transform: translateY(-1px);
+}
+.contact-icon-choice[aria-pressed="true"] {
+    border-color: var(--admin-brand);
+    background: var(--admin-brand-soft);
+    color: var(--admin-brand);
+    font-weight: 700;
+    box-shadow: 0 0 0 1px var(--admin-brand) inset;
+}
+.contact-icon-choice[aria-pressed="true"] svg { color: var(--admin-brand); }
+.contact-icon-choice:focus-visible {
+    outline: 3px solid var(--admin-brand-soft);
+    outline-offset: 2px;
+}
+.inline-group .tabular td.field-item_type { min-width: 350px; }
+@media (max-width: 767px) {
+    .contact-icon-picker {
+        grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+        min-width: 220px;
+        max-width: 100%;
+    }
+    .inline-group .tabular td.field-item_type { min-width: 240px; }
+}

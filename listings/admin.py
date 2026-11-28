@@ -14,7 +14,7 @@ from .admin_permissions import (
     SECTION_PERMISSION_FIELDS,
     permissions_for_sections,
 )
-from .forms import ManagerChangeForm, ManagerCreationForm
+from .forms import ContactItemAdminForm, ManagerChangeForm, ManagerCreationForm
 from .models import (
     Property, PropertyImage, PropertyVideo,
     SiteSettings, ContactItem, SocialLink, Ticket, ContactPage,
@@ -104,8 +104,12 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 # ---------- اطلاعات تماس (مرکب: ContactItem + SocialLink) ----------
 class ContactItemInline(admin.TabularInline):
     model = ContactItem
+    form = ContactItemAdminForm
     extra = 1
     fields = ('item_type', 'label', 'value', 'link', 'order', 'is_active')
+
+    class Media:
+        js = ('admin/js/contact_icon_picker.js',)
 
 
 class SocialLinkInline(admin.TabularInline):
@@ -115,7 +119,7 @@ class SocialLinkInline(admin.TabularInline):
 
 
 @admin.register(ContactPage)
-class ContactPageAdmin(admin.ModelAdmin):
+class ContactPageAdmin(AdminCSSMixin, admin.ModelAdmin):
     inlines = [ContactItemInline, SocialLinkInline]
     readonly_fields = ('updated_at',)
     fields = ('updated_at',)

@@ -1,9 +1,10 @@
 from django import forms
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.contrib.auth.models import User
+from django.templatetags.static import static
 
 from .admin_permissions import SECTION_PERMISSION_FIELDS, SECTION_PERMISSION_RULES, section_permission_strings
-from .models import Ticket
+from .models import ContactItem, Ticket
 
 
 class ManagerPermissionsFormMixin:
@@ -72,25 +73,52 @@ class ManagerChangeForm(ManagerPermissionsFormMixin, UserChangeForm):
         fields = ("username", "password")
 
 
+class ContactIconSelect(forms.Select):
+    """A normal select enhanced by local SVG icon buttons in the admin."""
+
+    def __init__(self, attrs=None, choices=()):
+        widget_attrs = {
+            "class": "contact-icon-select",
+            "data-icon-sprite": static("images/contact-icons.svg"),
+        }
+        widget_attrs.update(attrs or {})
+        super().__init__(attrs=widget_attrs, choices=choices)
+
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option_attrs = dict(attrs or {})
+        if value not in (None, ""):
+            option_attrs["data-icon"] = str(value)
+        return super().create_option(
+            name, value, label, selected, index,
+            subindex=subindex, attrs=option_attrs,
+        )
+
+
+class ContactItemAdminForm(forms.ModelForm):
+    """Use a searchable visual icon palette for each contact item."""
+
+    class Meta:
+        model = ContactItem
+        fields = "__all__"
+        widgets = {
+            "item_type": ContactIconSelect,
+        }
+
+
 class OwnerAccountForm(forms.ModelForm):
-    """Allow the site owner to edit only their own basic account details."""
+    """Allow the site owner to edit only their username and email."""
 
     class Meta:
         model = User
-        fields = ("username", "email", "first_name", "last_name")
+        fields = ("username", "email")
         labels = {
             "username": "نام کاربری",
             "email": "ایمیل",
-            "first_name": "نام",
-            "last_name": "نام خانوادگی",
         }
         widgets = {
             "username": forms.TextInput(attrs={"class": "vTextField", "autocomplete": "username"}),
             "email": forms.EmailInput(attrs={"class": "vTextField", "autocomplete": "email"}),
-            "first_name": forms.TextInput(attrs={"class": "vTextField", "autocomplete": "given-name"}),
-            "last_name": forms.TextInput(attrs={"class": "vTextField", "autocomplete": "family-name"}),
         }
-
 
 class TicketForm(forms.ModelForm):
     """Validated public contact form backed by the Ticket model."""

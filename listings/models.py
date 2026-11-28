@@ -241,16 +241,36 @@ class ContactItem(models.Model):
     TYPE_HOURS = 'hours'
     TYPE_CUSTOM = 'custom'
     TYPE_CHOICES = [
-        (TYPE_PHONE, 'تلفن ثابت'), (TYPE_MOBILE, 'همراه'),
-        (TYPE_EMAIL, 'ایمیل'), (TYPE_ADDRESS, 'آدرس'),
-        (TYPE_FAX, 'فکس'), (TYPE_HOURS, 'ساعات کاری'),
-        (TYPE_CUSTOM, 'سایر'),
+        (TYPE_PHONE, 'تلفن ثابت'),
+        (TYPE_MOBILE, 'تلفن همراه'),
+        (TYPE_EMAIL, 'ایمیل'),
+        (TYPE_ADDRESS, 'آدرس'),
+        (TYPE_FAX, 'فکس'),
+        (TYPE_HOURS, 'ساعات کاری'),
+        ('website', 'وب‌سایت'),
+        ('map', 'نقشه و مسیریابی'),
+        ('building', 'ساختمان و دفتر'),
+        ('support', 'پشتیبانی'),
+        ('message', 'پیام'),
+        ('whatsapp', 'واتساپ'),
+        ('telegram', 'تلگرام'),
+        ('instagram', 'اینستاگرام'),
+        ('calendar', 'تقویم و زمان مراجعه'),
+        ('user', 'شخص پاسخ‌گو'),
+        ('info', 'اطلاعات'),
+        ('briefcase', 'امور اداری'),
+        ('store', 'شعبه و فروشگاه'),
+        ('link', 'پیوند'),
+        ('clock', 'زمان'),
+        ('mail', 'صندوق پستی'),
+        ('phone-alt', 'تماس فوری'),
+        ('location', 'موقعیت مکانی'),
+        ('headset', 'مرکز تماس'),
+        ('video', 'تماس تصویری'),
+        ('globe', 'آدرس اینترنتی'),
     ]
-    ICONS = {
-        TYPE_PHONE: '📞', TYPE_MOBILE: '📱', TYPE_EMAIL: '✉️',
-        TYPE_ADDRESS: '📍', TYPE_FAX: '📠', TYPE_HOURS: '🕒', TYPE_CUSTOM: '•',
-    }
-    item_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_CUSTOM, verbose_name='نوع')
+    ICONS = {value: value for value, _label in TYPE_CHOICES}
+    item_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_CUSTOM, verbose_name='آیکن')
     label = models.CharField(max_length=100, verbose_name='عنوان نمایشی')
     value = models.CharField(max_length=300, verbose_name='مقدار')
     link = models.CharField(max_length=300, blank=True, verbose_name='لینک')
@@ -267,7 +287,7 @@ class ContactItem(models.Model):
 
     @property
     def icon(self):
-        return self.ICONS.get(self.item_type, '•')
+        return self.ICONS.get(self.item_type, 'info')
 
 
 # ---------- شبکه‌های اجتماعی ----------
@@ -277,16 +297,21 @@ class SocialLink(models.Model):
         related_name='social_links', verbose_name='صفحهٔ تماس'
     )
     PLATFORM_CHOICES = [
-        ('instagram', 'اینستاگرام'), ('telegram', 'تلگرام'),
-        ('whatsapp', 'واتساپ'), ('x', 'X (توییتر)'),
-        ('linkedin', 'لینکدین'), ('youtube', 'یوتیوب'),
-        ('aparat', 'آپارات'), ('facebook', 'فیسبوک'),
+        ('instagram', 'اینستاگرام'),
+        ('telegram', 'تلگرام'),
+        ('whatsapp', 'واتساپ'),
+        ('x', 'X (توییتر)'),
+        ('linkedin', 'لینکدین'),
+        ('youtube', 'یوتیوب'),
+        ('aparat', 'آپارات'),
+        ('facebook', 'فیسبوک'),
+        ('eitaa', 'ایتا'),
+        ('soroush', 'سروش'),
+        ('bale', 'بله'),
+        ('rubika', 'روبیکا'),
+        ('shad', 'شاد'),
     ]
-    ICONS = {
-        'instagram': '📷', 'telegram': '✈️', 'whatsapp': '💬',
-        'x': '𝕏', 'linkedin': '💼', 'youtube': '▶️',
-        'aparat': '🎬', 'facebook': '📘',
-    }
+    ICONS = {value: value for value, _label in PLATFORM_CHOICES}
     platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES, verbose_name='پلتفرم')
     url = models.URLField(verbose_name='لینک')
     order = models.PositiveIntegerField(default=0, verbose_name='ترتیب')
@@ -302,7 +327,7 @@ class SocialLink(models.Model):
 
     @property
     def icon(self):
-        return self.ICONS.get(self.platform, '🔗')
+        return self.ICONS.get(self.platform, 'link')
 
 
 # ---------- تیکت ----------

@@ -1,0 +1,14 @@
+Local social icon assets
+=========================
+
+All icon files in this directory are served from this site's own static files.
+No social icon is fetched from a CDN or any third-party host at runtime.
+
+Source notes:
+- Instagram, Telegram, WhatsApp, X, YouTube and Facebook path data: Simple Icons
+  (https://github.com/simple-icons/simple-icons), CC0 1.0.
+- Aparat and Eitaa vector paths: aasaam/brand-icons
+  (https://github.com/aasaam/brand-icons), MIT license.
+- LinkedIn, Soroush, Bale, Rubika and Shad artwork in this sprite is locally
+  drawn/assembled for this project. The names and marks remain trademarks of
+  their respective owners; use them only to identify the corresponding links.

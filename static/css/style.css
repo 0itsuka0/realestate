@@ -605,3 +605,28 @@ a.contact-value:hover { color: var(--brand); }
     line-height: inherit;
     vertical-align: baseline;
 }
+
+
+/* ---------- Local SVG icons on the contact page ---------- */
+.contact-icon-svg {
+    display: block;
+    width: 22px;
+    height: 22px;
+    color: var(--brand);
+    flex: 0 0 auto;
+}
+.social-btn {
+    gap: .7rem;
+    min-height: 58px;
+}
+.social-icon {
+    display: block;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    font-size: initial;
+    transition: transform .16s ease;
+}
+.social-btn:hover .social-icon {
+    transform: translateY(-1px) scale(1.04);
+}

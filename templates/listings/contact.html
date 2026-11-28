@@ -1,4 +1,5 @@
 {% extends "listings/base.html" %}
+{% load static %}
 {% block title %}اطلاعات تماس — {{ site_settings.site_name }}{% endblock %}
 
 {% block content %}
@@ -26,7 +27,11 @@
             <div class="contact-list">
                 {% for item in contact_items %}
                 <div class="contact-item">
-                    <div class="contact-icon">{{ item.icon }}</div>
+                    <div class="contact-icon" aria-hidden="true">
+                        <svg class="contact-icon-svg" viewBox="0 0 24 24" focusable="false">
+                            <use href="{% static 'images/contact-icons.svg' %}#{{ item.icon }}"></use>
+                        </svg>
+                    </div>
                     <div class="contact-body">
                         <span class="contact-label">{{ item.label }}</span>
                         {% if item.link %}
@@ -46,8 +51,10 @@
             <h2 class="section-title">شبکه‌های اجتماعی</h2>
             <div class="social-grid">
                 {% for s in social_links %}
-                <a href="{{ s.url }}" target="_blank" rel="noopener" class="social-btn" title="{{ s.get_platform_display }}">
-                    <span class="social-icon">{{ s.icon }}</span>
+                <a href="{{ s.url }}" target="_blank" rel="noopener noreferrer" class="social-btn" title="{{ s.get_platform_display }}">
+                    <svg class="social-icon" role="img" aria-label="{{ s.get_platform_display }}" viewBox="0 0 48 48" focusable="false">
+                        <use href="{% static 'images/social-icons.svg' %}#{{ s.icon }}"></use>
+                    </svg>
                     <span class="social-name">{{ s.get_platform_display }}</span>
                 </a>
                 {% endfor %}
