@@ -523,10 +523,8 @@ class AdminPresentationTests(TestCase):
         self.assertContains(response, 'class="property-admin-thumbnail"')
         self.assertContains(response, '/media/properties/images/admin-thumbnail.jpg')
         content = response.content.decode()
-        self.assertLess(
-            content.index('class="column-property_thumbnail"'),
-            content.index('class="column-title"'),
-        )
+        header = content.split("<thead", 1)[1].split("</thead>", 1)[0]
+        self.assertLess(header.index("تصویر"), header.index("عنوان"))
         # The changelist must load the JS that colors its editable status field.
         self.assertContains(response, "listings/js/property_admin.js")
 
