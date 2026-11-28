@@ -90,6 +90,33 @@ class PropertyListViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["page_obj"].number, 2)
         self.assertEqual(len(response.context["properties"]), 1)
+    def test_property_prices_use_persian_digits_and_three_digit_grouping(self):
+        Property.objects.create(
+            title="ملک فروشی با قیمت نمونه",
+            deal_type=Property.DEAL_SALE,
+            usage_type=Property.USAGE_RESIDENTIAL,
+            property_type=Property.PT_APARTMENT,
+            price=1_234_567_890,
+            price_per_meter=12_345_678,
+            status=Property.STATUS_ACTIVE,
+        )
+        Property.objects.create(
+            title="ملک اجاره‌ای با قیمت نمونه",
+            deal_type=Property.DEAL_RENT,
+            usage_type=Property.USAGE_RESIDENTIAL,
+            property_type=Property.PT_APARTMENT,
+            deposit=987_654_321,
+            rent=45_678_900,
+            status=Property.STATUS_ACTIVE,
+        )
+
+        response = self.client.get(reverse("listings:list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "۱٬۲۳۴٬۵۶۷٬۸۹۰")
+        self.assertContains(response, "۱۲٬۳۴۵٬۶۷۸")
+        self.assertContains(response, "۹۸۷٬۶۵۴٬۳۲۱")
+        self.assertContains(response, "۴۵٬۶۷۸٬۹۰۰")
 
     def test_area_and_city_filters_can_be_combined(self):
         response = self.client.get(
@@ -466,6 +493,8 @@ class AdminPresentationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "آخرین ویرایش")
         self.assertContains(response, 'property-status-select')
+        # The changelist must load the JS that colors its editable status field.
+        self.assertContains(response, "listings/js/property_admin.js")
 
     def test_sidebar_section_titles_are_plain_text_not_links(self):
         response = self.client.get(reverse("admin:listings_property_changelist"))

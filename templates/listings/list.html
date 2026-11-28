@@ -1,5 +1,5 @@
 {% extends "listings/base.html" %}
-{% load humanize %}
+{% load humanize number_filters %}
 {% block title %}فهرست فایل‌ها — {{ site_settings.site_name }}{% endblock %}
 
 {% block content %}
@@ -277,14 +277,14 @@
                     <div class="property-price">
                         {% if prop.deal_type == 'sale' %}
                             {% if prop.price %}
-                                <strong>{{ prop.price|intcomma }} تومان</strong>
-                                {% if prop.price_per_meter %}<span class="text-muted small">{{ prop.price_per_meter|intcomma }} تومان/متر</span>{% endif %}
+                                <strong><bdi dir="ltr">{{ prop.price|persian_intcomma }}</bdi> تومان</strong>
+                                {% if prop.price_per_meter %}<span class="text-muted small"><bdi dir="ltr">{{ prop.price_per_meter|persian_intcomma }}</bdi> تومان/متر</span>{% endif %}
                             {% else %}
                                 <span class="text-muted">قیمت ثبت نشده</span>
                             {% endif %}
                         {% elif prop.deal_type == 'rent' %}
-                            {% if prop.deposit %}<span>ودیعه: <strong>{{ prop.deposit|intcomma }}</strong></span>{% endif %}
-                            {% if prop.rent %}<span>اجاره: <strong>{{ prop.rent|intcomma }}</strong></span>{% endif %}
+                            {% if prop.deposit %}<span>ودیعه: <strong><bdi dir="ltr">{{ prop.deposit|persian_intcomma }}</bdi></strong></span>{% endif %}
+                            {% if prop.rent %}<span>اجاره: <strong><bdi dir="ltr">{{ prop.rent|persian_intcomma }}</bdi></strong></span>{% endif %}
                             {% if not prop.deposit and not prop.rent %}
                                 <span class="text-muted">قیمت ثبت نشده</span>
                             {% endif %}
