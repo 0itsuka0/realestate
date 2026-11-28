@@ -84,14 +84,14 @@ class ContactIconSelect(forms.Select):
         widget_attrs.update(attrs or {})
         super().__init__(attrs=widget_attrs, choices=choices)
 
-    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
-        option_attrs = dict(attrs or {})
-        if value not in (None, ""):
-            option_attrs["data-icon"] = str(value)
-        return super().create_option(
-            name, value, label, selected, index,
-            subindex=subindex, attrs=option_attrs,
-        )
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        for _group_label, options, _index in context["widget"]["optgroups"]:
+            for option in options:
+                option_value = option.get("value")
+                if option_value not in (None, ""):
+                    option.setdefault("attrs", {})["data-icon"] = str(option_value)
+        return context
 
 
 class ContactItemAdminForm(forms.ModelForm):
