@@ -709,3 +709,42 @@ a.contact-value:hover { color: var(--brand); }
 @media(max-width:991.98px){.property-card-horizontal{min-height:198px}.property-card-horizontal .property-cover,.property-card-horizontal .property-cover-empty{min-height:198px}}
 @media(max-width:575.98px){.property-grid{grid-template-columns:minmax(0,1fr);gap:.8rem}.property-card-horizontal{grid-template-columns:minmax(112px,34%) minmax(0,1fr);min-height:190px}.property-card-horizontal .property-cover,.property-card-horizontal .property-cover-empty{min-height:190px}.property-card-horizontal .property-body{padding:.7rem .8rem}.gallery-heading{padding:.85rem .9rem}.gallery-stage{aspect-ratio:4/3;min-height:215px}.gallery-nav{width:38px;height:38px}.gallery-prev{inset-inline-end:.65rem}.gallery-next{inset-inline-start:.65rem}.gallery-fullscreen{top:.65rem;inset-inline-start:.65rem;width:34px;height:34px}.gallery-counter{bottom:.65rem;inset-inline-start:.65rem}.gallery-caption{flex-direction:column;gap:.2rem;padding:.65rem .85rem}.gallery-thumbs-wrap{padding:.65rem .8rem .75rem}.gallery-thumb{flex-basis:82px;width:82px;height:60px}}
 @media(prefers-reduced-motion:reduce){.property-card-horizontal,.property-card-horizontal .property-cover,.gallery-item,.gallery-nav,.gallery-fullscreen,.gallery-thumb,.video-open{transition:none!important;scroll-behavior:auto!important}}
+
+
+/* ---------- Follow-up layout refinements ---------- */
+.property-card-horizontal {
+    direction: ltr;
+    grid-template-columns: minmax(108px, 42%) minmax(0, 1fr);
+}
+.property-card-horizontal .property-body {
+    direction: rtl;
+    text-align: right;
+}
+.property-card-horizontal .property-card-heading,
+.property-card-horizontal .property-meta,
+.property-card-horizontal .property-tags,
+.property-card-horizontal .property-price {
+    direction: rtl;
+}
+.gallery-prev {
+    inset-inline-start: auto;
+    inset-inline-end: auto;
+    right: 1rem;
+    left: auto;
+}
+.gallery-next {
+    inset-inline-start: auto;
+    inset-inline-end: auto;
+    left: 1rem;
+    right: auto;
+}
+.gallery-caption[hidden] {
+    display: none !important;
+}
+@media (max-width: 575.98px) {
+    .property-card-horizontal {
+        grid-template-columns: minmax(112px, 42%) minmax(0, 1fr);
+    }
+    .gallery-prev { right: .65rem; left: auto; }
+    .gallery-next { left: .65rem; right: auto; }
+}

@@ -1165,3 +1165,47 @@ html[data-theme="dark"] { --admin-button-ink: #2b2031; }
     .contact-icon-menu { max-width: calc(100vw - 24px); }
     .inline-group .tabular td.field-item_type { min-width: 165px; }
 }
+
+
+/* ---------- Property thumbnail in admin changelist ---------- */
+#changelist table thead th.column-property_thumbnail,
+#changelist table tbody td.field-property_thumbnail {
+    width: 86px;
+    min-width: 86px;
+    text-align: center;
+    vertical-align: middle;
+}
+.property-admin-thumbnail {
+    display: block;
+    width: 68px;
+    height: 52px;
+    margin: 0 auto;
+    border: 1px solid var(--admin-line);
+    border-radius: 8px;
+    background: var(--admin-surface-soft);
+    object-fit: cover;
+}
+.property-admin-thumbnail-placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 68px;
+    height: 52px;
+    border: 1px dashed var(--admin-line);
+    border-radius: 8px;
+    background: var(--admin-surface-soft);
+    color: var(--admin-muted);
+    font-size: 1rem;
+}
+@media (max-width: 767px) {
+    #changelist table thead th.column-property_thumbnail,
+    #changelist table tbody td.field-property_thumbnail {
+        width: 76px;
+        min-width: 76px;
+    }
+    .property-admin-thumbnail,
+    .property-admin-thumbnail-placeholder {
+        width: 60px;
+        height: 46px;
+    }
+}

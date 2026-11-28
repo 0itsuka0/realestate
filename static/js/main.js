@@ -112,8 +112,9 @@
 
             var activeSlide = slides[currentIndex];
             if (caption) {
-                caption.textContent = activeSlide.getAttribute("data-caption") ||
-                    (activeSlide.getAttribute("data-kind") === "image" ? "تصویر ملک" : "ویدئوی ملک");
+                var captionText = (activeSlide.getAttribute("data-caption") || "").trim();
+                caption.textContent = captionText;
+                if (caption.parentElement) caption.parentElement.hidden = !captionText;
             }
             if (shouldScrollThumb && tabs[currentIndex]) {
                 tabs[currentIndex].scrollIntoView({

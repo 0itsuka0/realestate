@@ -48,9 +48,10 @@ class PropertyVideoInline(admin.TabularInline):
 @admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
     list_display = (
-        'title', 'deal_type', 'usage_type', 'property_type', 'city',
+        'property_thumbnail', 'title', 'deal_type', 'usage_type', 'property_type', 'city',
         'status', 'is_featured', 'created_at', 'updated_at',
     )
+    list_display_links = ('title',)
     list_filter = ('status', 'deal_type', 'usage_type', 'property_type', 'province', 'city', 'is_featured')
     search_fields = ('title', 'city', 'neighborhood', 'address', 'description')
     list_editable = ('status',)
@@ -70,6 +71,21 @@ class PropertyAdmin(admin.ModelAdmin):
         ('قیمت — اجاره', {'fields': ('deposit', 'rent', 'is_convertible'), 'classes': ('rent-price-group',)}),
         ('تماس و توضیحات', {'fields': ('phone', 'description')}),
     )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('images')
+
+    @admin.display(description='تصویر')
+    def property_thumbnail(self, obj):
+        image = obj.main_image
+        if not image:
+            return format_html(
+                '<span class="property-admin-thumbnail-placeholder" aria-label="بدون تصویر">—</span>'
+            )
+        return format_html(
+            '<img class="property-admin-thumbnail" src="{}" alt="تصویر ملک" loading="lazy">',
+            image.url,
+        )
 
     def formfield_for_choice_field(self, db_field, request, **kwargs):
         formfield = super().formfield_for_choice_field(db_field, request, **kwargs)

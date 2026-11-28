@@ -504,17 +504,29 @@ class AdminPresentationTests(TestCase):
         self.client.force_login(self.owner)
 
     def test_property_changelist_has_last_edited_column_and_status_widget_class(self):
-        Property.objects.create(
+        prop = Property.objects.create(
             title="فایل جهت بررسی پنل",
             deal_type=Property.DEAL_SALE,
             usage_type=Property.USAGE_RESIDENTIAL,
             property_type=Property.PT_APARTMENT,
             city="تهران",
         )
+        PropertyImage.objects.create(
+            property=prop,
+            image="properties/images/admin-thumbnail.jpg",
+            order=0,
+        )
         response = self.client.get(reverse("admin:listings_property_changelist"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "آخرین ویرایش")
         self.assertContains(response, 'property-status-select')
+        self.assertContains(response, 'class="property-admin-thumbnail"')
+        self.assertContains(response, '/media/properties/images/admin-thumbnail.jpg')
+        content = response.content.decode()
+        self.assertLess(
+            content.index('class="column-property_thumbnail"'),
+            content.index('class="column-title"'),
+        )
         # The changelist must load the JS that colors its editable status field.
         self.assertContains(response, "listings/js/property_admin.js")
 
@@ -707,6 +719,9 @@ class PropertyMediaGalleryTests(TestCase):
         self.assertContains(response, 'aria-roledescription="carousel"')
         self.assertContains(response, 'controls playsinline preload="metadata"')
         self.assertContains(response, "بازدید ویدئویی")
+        self.assertNotContains(response, '<h2 class="gallery-title">تصاویر و ویدئوها</h2>')
+        self.assertNotContains(response, "برای جابه‌جایی، از بندانگشتی‌ها یا دکمه‌های جهت‌نما استفاده کنید.")
+        self.assertNotContains(response, "برای نمایش، انتخاب کنید")
 
     def test_gallery_embeds_recognized_video_provider_and_does_not_trust_similar_hosts(self):
         PropertyVideo.objects.create(

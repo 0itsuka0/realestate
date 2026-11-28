@@ -109,7 +109,6 @@
             <div class="gallery-heading">
                 <div>
                     <span class="gallery-eyebrow">گالری رسانه</span>
-                    <h2 class="gallery-title">تصاویر و ویدئوها</h2>
                 </div>
                 {% if media_items %}<span class="gallery-total">{{ media_items|length }} رسانه</span>{% endif %}
             </div>
@@ -171,12 +170,12 @@
                     </svg>
                 </button>
             </div>
-            <div class="gallery-caption" aria-live="polite">
+            <div class="gallery-caption" aria-live="polite" {% if not media_items.0.caption %}hidden{% endif %}>
                 <span class="gallery-caption-label">توضیح رسانه</span>
-                <p data-gallery-caption>{{ media_items.0.caption|default:"برای جابه‌جایی، از بندانگشتی‌ها یا دکمه‌های جهت‌نما استفاده کنید." }}</p>
+                <p data-gallery-caption>{{ media_items.0.caption }}</p>
             </div>
             <div class="gallery-thumbs-wrap">
-                <div class="gallery-thumbs-heading"><span>انتخاب رسانه</span><small>برای نمایش، انتخاب کنید</small></div>
+                <div class="gallery-thumbs-heading"><span>انتخاب رسانه</span></div>
                 <div class="gallery-thumbs" role="tablist" aria-label="انتخاب تصویر یا ویدئو">
                     {% for m in media_items %}
                     <button type="button" role="tab"
