@@ -3,6 +3,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 import re
 import unicodedata
+from urllib.parse import parse_qs, urlparse
 
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
@@ -236,6 +237,48 @@ def property_list(request):
     return render(request, "listings/list.html", context)
 
 
+def _video_embed_url(video_url):
+    """Only create iframe embeds for recognized YouTube and Vimeo hostnames."""
+    try:
+        parsed = urlparse(str(video_url or "").strip())
+    except ValueError:
+        return ""
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        return ""
+    host = parsed.hostname.lower().rstrip(".")
+    path = parsed.path or ""
+    if host in {"youtu.be", "www.youtu.be"}:
+        video_id = path.strip("/").split("/", 1)[0]
+        if re.fullmatch(r"[A-Za-z0-9_-]{6,20}", video_id):
+            return f"https://www.youtube-nocookie.com/embed/{video_id}?enablejsapi=1"
+    elif host in {"youtube.com", "www.youtube.com", "m.youtube.com"}:
+        if path.rstrip("/") == "/watch":
+            video_id = parse_qs(parsed.query).get("v", [""])[0]
+        else:
+            match = re.fullmatch(r"/(?:embed|shorts|live)/([A-Za-z0-9_-]{6,20})/?", path)
+            video_id = match.group(1) if match else ""
+        if re.fullmatch(r"[A-Za-z0-9_-]{6,20}", video_id):
+            return f"https://www.youtube-nocookie.com/embed/{video_id}?enablejsapi=1"
+    elif host in {"vimeo.com", "www.vimeo.com", "player.vimeo.com"}:
+        match = re.search(r"/(?:video/)?(\d{5,12})/?$", path)
+        if match:
+            return f"https://player.vimeo.com/video/{match.group(1)}"
+    return ""
+
+
+def _is_direct_video_url(video_url):
+    """Recognize direct video-file links with optional query strings."""
+    try:
+        parsed = urlparse(str(video_url or "").strip())
+    except ValueError:
+        return False
+    return (
+        parsed.scheme in {"http", "https"}
+        and bool(parsed.hostname)
+        and parsed.path.lower().endswith((".mp4", ".webm", ".ogg", ".ogv", ".mov", ".m4v"))
+    )
+
+
 def property_detail(request, pk):
     # لینک مستقیم همه وضعیت‌ها را برای مشاهده آرشیو می‌پذیرد.
     prop = get_object_or_404(
@@ -270,6 +313,8 @@ def property_detail(request, pk):
                     "url": vid.video_url,
                     "caption": vid.title or "",
                     "poster": vid.poster.url if vid.poster else "",
+                    "embed_url": _video_embed_url(vid.video_url),
+                    "is_direct_video": _is_direct_video_url(vid.video_url),
                 }
             )
 

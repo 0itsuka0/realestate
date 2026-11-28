@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from .forms import TicketForm
-from .models import ContactItem, Property, SiteSettings, SocialLink, Ticket
+from .models import ContactItem, Property, PropertyImage, PropertyVideo, SiteSettings, SocialLink, Ticket
 
 
 class PropertyModelTests(TestCase):
@@ -68,6 +68,21 @@ class PropertyListViewTests(TestCase):
         self.assertEqual(content.count('<details class="search-accordion-section'), 4)
         detail_tags = [part.split(">", 1)[0] for part in content.split("<details")[1:]]
         self.assertTrue(all(" open" not in tag for tag in detail_tags))
+
+    def test_homepage_uses_two_column_horizontal_property_card_grid(self):
+        Property.objects.create(
+            title="فایل با کارت افقی",
+            deal_type=Property.DEAL_SALE,
+            usage_type=Property.USAGE_RESIDENTIAL,
+            property_type=Property.PT_APARTMENT,
+            status=Property.STATUS_ACTIVE,
+        )
+        response = self.client.get(reverse("listings:list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="property-grid"')
+        self.assertContains(response, 'class="property-card property-card-horizontal"')
+        self.assertContains(response, 'class="property-cover-wrap"')
 
     def test_admin_configured_homepage_banner_image_is_rendered_before_search(self):
         SiteSettings.objects.update_or_create(
@@ -658,3 +673,55 @@ class ContactManagementInterfaceTests(TestCase):
         self.assertEqual(choices["bale"], "بله")
         self.assertEqual(choices["rubika"], "روبیکا")
         self.assertEqual(choices["shad"], "شاد")
+
+
+class PropertyMediaGalleryTests(TestCase):
+    def setUp(self):
+        self.property = Property.objects.create(
+            title="آپارتمان دارای رسانه",
+            deal_type=Property.DEAL_SALE,
+            usage_type=Property.USAGE_RESIDENTIAL,
+            property_type=Property.PT_APARTMENT,
+            status=Property.STATUS_ACTIVE,
+        )
+
+    def test_gallery_renders_navigation_accessibility_and_local_video_controls(self):
+        PropertyImage.objects.create(
+            property=self.property,
+            image="properties/images/gallery-test.jpg",
+            caption="نمای پذیرایی",
+        )
+        PropertyVideo.objects.create(
+            property=self.property,
+            video_file="properties/videos/tour-test.mp4",
+            poster="properties/video_posters/tour-poster.jpg",
+            title="بازدید ویدئویی",
+        )
+        response = self.client.get(reverse("listings:detail", args=[self.property.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "data-property-gallery")
+        self.assertContains(response, "data-gallery-prev")
+        self.assertContains(response, "data-gallery-next")
+        self.assertContains(response, "data-gallery-fullscreen")
+        self.assertContains(response, 'role="tablist"')
+        self.assertContains(response, 'aria-roledescription="carousel"')
+        self.assertContains(response, 'controls playsinline preload="metadata"')
+        self.assertContains(response, "بازدید ویدئویی")
+
+    def test_gallery_embeds_recognized_video_provider_and_does_not_trust_similar_hosts(self):
+        PropertyVideo.objects.create(
+            property=self.property,
+            video_url="https://www.youtube.com/watch?v=abc123xyz90",
+            title="ویدئوی یوتیوب",
+        )
+        PropertyVideo.objects.create(
+            property=self.property,
+            video_url="https://youtube.com.evil.example/watch?v=abc123xyz90",
+            title="پیوند خارجی",
+        )
+        response = self.client.get(reverse("listings:detail", args=[self.property.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'src="https://www.youtube-nocookie.com/embed/abc123xyz90?enablejsapi=1"')
+        self.assertContains(response, 'href="https://youtube.com.evil.example/watch?v=abc123xyz90"')
+        self.assertContains(response, "بازکردن ویدئو")
+        self.assertEqual(response.content.decode().count("<iframe"), 1)

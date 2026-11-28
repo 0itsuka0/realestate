@@ -248,19 +248,21 @@
 </div>
 
 {% if properties %}
-<div class="row g-3">
+<div class="property-grid">
     {% for prop in properties %}
-    <div class="col-12 col-sm-6 col-lg-6 col-xl-4">
+    <div class="property-grid-item">
         <a href="{% url 'listings:detail' prop.pk %}" class="text-decoration-none text-reset d-block h-100">
-            <div class="property-card">
-                {% if prop.main_image %}
-                <img src="{{ prop.main_image.url }}" class="property-cover" alt="{{ prop.title }}">
-                {% else %}
-                <div class="property-cover property-cover-empty">بدون تصویر</div>
-                {% endif %}
+            <article class="property-card property-card-horizontal">
+                <div class="property-cover-wrap">
+                    {% if prop.main_image %}
+                    <img src="{{ prop.main_image.url }}" class="property-cover" alt="{{ prop.title }}" loading="lazy" decoding="async">
+                    {% else %}
+                    <div class="property-cover property-cover-empty">بدون تصویر</div>
+                    {% endif %}
+                </div>
                 <div class="property-body">
-                    <div class="d-flex justify-content-between align-items-start gap-2">
-                        <h5 class="property-title">{{ prop.title }}</h5>
+                    <div class="property-card-heading">
+                        <h3 class="property-title">{{ prop.title }}</h3>
                         {% if prop.is_featured %}<span class="tag badge-featured">ویژه</span>{% endif %}
                     </div>
                     <div class="property-meta">
@@ -291,7 +293,7 @@
                         {% endif %}
                     </div>
                 </div>
-            </div>
+            </article>
         </a>
     </div>
     {% endfor %}
