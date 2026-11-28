@@ -882,3 +882,119 @@ html[data-theme="dark"] { --admin-button-ink: #2b2031; }
         padding: 10px;
     }
 }
+
+
+#changelist-filter {
+    float: none !important;
+    clear: both;
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100% !important;
+    max-width: none;
+    box-sizing: border-box;
+    margin: 0 0 14px !important;
+    padding: 11px 12px;
+    border: 1px solid var(--admin-line);
+    border-radius: 13px;
+    background: var(--admin-surface);
+    color: var(--admin-ink);
+    box-shadow: var(--admin-shadow);
+}
+#changelist-filter > h2 {
+    flex: 0 0 100%;
+    margin: 0;
+    padding: 2px 3px 8px;
+    border: 0;
+    border-bottom: 1px solid var(--admin-line);
+    background: transparent;
+    color: var(--admin-ink);
+    font-size: .82rem;
+}
+#changelist-filter #changelist-filter-extra-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+}
+#changelist-filter #changelist-filter-extra-actions h3 { margin: 0; font-size: .7rem; }
+#changelist-filter #changelist-filter-extra-actions a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 4px 9px;
+    border: 1px solid var(--admin-line);
+    border-radius: 8px;
+    color: var(--admin-brand);
+    background: var(--admin-brand-soft);
+    text-decoration: none;
+}
+#changelist-filter > details {
+    flex: 1 1 150px;
+    min-width: 135px;
+    max-width: 260px;
+    margin: 0;
+    border: 1px solid var(--admin-line);
+    border-radius: 9px;
+    background: var(--admin-surface-soft);
+    overflow: hidden;
+}
+#changelist-filter > details > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 7px;
+    min-height: 36px;
+    padding: 6px 10px;
+    color: var(--admin-ink);
+    font-size: .72rem;
+    font-weight: 600;
+    line-height: 1.45;
+    cursor: pointer;
+    list-style-position: inside;
+}
+#changelist-filter > details[open] {
+    flex-basis: 210px;
+    background: var(--admin-surface);
+    border-color: var(--admin-brand);
+}
+#changelist-filter > details > ul {
+    max-height: 190px;
+    overflow: auto;
+    margin: 0;
+    padding: 5px 10px 9px;
+    border-top: 1px solid var(--admin-line);
+    list-style: none;
+}
+#changelist-filter > details li { margin: 2px 0; font-size: .7rem; }
+#changelist-filter > details li a {
+    display: block;
+    padding: 4px 6px;
+    border-radius: 6px;
+    color: var(--admin-muted);
+    text-decoration: none;
+}
+#changelist-filter > details li a:hover {
+    color: var(--admin-brand);
+    background: var(--admin-row-hover);
+}
+#changelist-filter > details li.selected a {
+    color: var(--admin-brand);
+    background: var(--admin-brand-soft);
+    font-weight: 700;
+}
+#changelist { display: block; width: 100%; }
+#changelist .changelist-form-container { margin: 0 !important; min-width: 0; }
+#changelist-filter + #changelist { margin-top: 0; }
+
+@media (max-width: 767px) {
+    #changelist-filter { gap: 6px; padding: 9px; }
+    #changelist-filter > details {
+        flex: 1 1 calc(50% - 6px);
+        min-width: 0;
+        max-width: none;
+    }
+    #changelist-filter > details[open] { flex-basis: 100%; }
+}

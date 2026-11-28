@@ -117,6 +117,7 @@ class PropertyListViewTests(TestCase):
         self.assertContains(response, "۱۲٬۳۴۵٬۶۷۸")
         self.assertContains(response, "۹۸۷٬۶۵۴٬۳۲۱")
         self.assertContains(response, "۴۵٬۶۷۸٬۹۰۰")
+        self.assertContains(response, "تومان")
 
     def test_area_and_city_filters_can_be_combined(self):
         response = self.client.get(
@@ -496,6 +497,16 @@ class AdminPresentationTests(TestCase):
         # The changelist must load the JS that colors its editable status field.
         self.assertContains(response, "listings/js/property_admin.js")
 
+    def test_changelist_filters_are_above_the_table_and_collapsed(self):
+        response = self.client.get(reverse("admin:listings_property_changelist"))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertLess(content.index('id="changelist-filter"'), content.index('id="changelist"'))
+        filter_panel = content.split('id="changelist-filter"', 1)[1].split('</search>', 1)[0]
+        self.assertIn("<details data-filter-title=", filter_panel)
+        detail_tags = [part.split(">", 1)[0] for part in filter_panel.split("<details")[1:]]
+        self.assertTrue(all(" open" not in tag for tag in detail_tags))
+
     def test_sidebar_section_titles_are_plain_text_not_links(self):
         response = self.client.get(reverse("admin:listings_property_changelist"))
         self.assertEqual(response.status_code, 200)
@@ -569,3 +580,39 @@ class EnhancedPropertySearchTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["sort"], "newest")
         self.assertEqual(response.context["count"], 2)
+
+
+class PropertyDetailNumberTests(TestCase):
+    def test_detail_page_formats_sale_and_rental_money_in_persian(self):
+        sale = Property.objects.create(
+            title="فایل فروش برای جزئیات",
+            deal_type=Property.DEAL_SALE,
+            usage_type=Property.USAGE_RESIDENTIAL,
+            property_type=Property.PT_APARTMENT,
+            price=1_234_567_890,
+            price_per_meter=12_345_678,
+            status=Property.STATUS_ACTIVE,
+        )
+        rent = Property.objects.create(
+            title="فایل اجاره برای جزئیات",
+            deal_type=Property.DEAL_RENT,
+            usage_type=Property.USAGE_RESIDENTIAL,
+            property_type=Property.PT_APARTMENT,
+            deposit=987_654_321,
+            rent=45_678_900,
+            status=Property.STATUS_ACTIVE,
+        )
+
+        sale_response = self.client.get(reverse("listings:detail", args=[sale.pk]))
+        rent_response = self.client.get(reverse("listings:detail", args=[rent.pk]))
+
+        self.assertEqual(sale_response.status_code, 200)
+        self.assertEqual(rent_response.status_code, 200)
+        self.assertContains(sale_response, "۱٬۲۳۴٬۵۶۷٬۸۹۰")
+        self.assertContains(sale_response, "۱۲٬۳۴۵٬۶۷۸")
+        self.assertContains(sale_response, "تومان")
+        self.assertContains(rent_response, "۹۸۷٬۶۵۴٬۳۲۱")
+        self.assertContains(rent_response, "۴۵٬۶۷۸٬۹۰۰")
+        self.assertContains(rent_response, "تومان")
+        self.assertContains(sale_response, "js/main.js")
+        self.assertContains(rent_response, "js/main.js")

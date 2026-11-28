@@ -1,5 +1,5 @@
 {% extends "listings/base.html" %}
-{% load humanize %}
+{% load number_filters %}
 {% block title %}{{ property.title }} — {{ site_settings.site_name }}{% endblock %}
 
 {% block content %}
@@ -39,16 +39,16 @@
             <div class="price-box">
                 {% if property.deal_type == 'sale' %}
                     {% if property.price %}
-                        <div class="price-main">{{ property.price|intcomma }} <small>تومان</small></div>
+                        <div class="price-main"><bdi dir="ltr">{{ property.price|persian_intcomma }}</bdi> <small>تومان</small></div>
                         {% if property.price_per_meter %}
-                            <div class="price-sub">{{ property.price_per_meter|intcomma }} تومان هر متر</div>
+                            <div class="price-sub"><bdi dir="ltr">{{ property.price_per_meter|persian_intcomma }}</bdi> تومان هر متر</div>
                         {% endif %}
                     {% else %}
                         <div class="text-muted">قیمت ثبت نشده</div>
                     {% endif %}
                 {% elif property.deal_type == 'rent' %}
-                    {% if property.deposit %}<div class="price-row">ودیعه: <strong>{{ property.deposit|intcomma }}</strong> تومان</div>{% endif %}
-                    {% if property.rent %}<div class="price-row">اجاره: <strong>{{ property.rent|intcomma }}</strong> تومان</div>{% endif %}
+                    {% if property.deposit %}<div class="price-row">ودیعه: <strong><bdi dir="ltr">{{ property.deposit|persian_intcomma }}</bdi></strong> تومان</div>{% endif %}
+                    {% if property.rent %}<div class="price-row">اجاره: <strong><bdi dir="ltr">{{ property.rent|persian_intcomma }}</bdi></strong> تومان</div>{% endif %}
                     {% if property.deposit and property.rent %}
                         {% if property.is_convertible %}
                             <div class="price-sub">ودیعه و اجاره قابل تبدیل</div>
