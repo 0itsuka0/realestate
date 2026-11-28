@@ -404,6 +404,7 @@ class OwnerAccountTests(TestCase):
         self.assertContains(response, 'name="username"')
         self.assertContains(response, 'name="email"')
         self.assertContains(response, reverse("admin:password_change"))
+        self.assertContains(response, 'class="button button-primary"')
 
     def test_owner_can_update_basic_account_details_without_changing_privileges(self):
         response = self.client.post(
@@ -441,3 +442,101 @@ class OwnerAccountTests(TestCase):
         response = self.client.get(reverse("admin:password_change"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'name="old_password"')
+
+
+
+class AdminPresentationTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_superuser(
+            username="adminpresentation",
+            email="adminpresentation@example.com",
+            password="Admin-Presentation-Password-2026!",
+        )
+        self.client.force_login(self.owner)
+
+    def test_property_changelist_has_last_edited_column_and_status_widget_class(self):
+        Property.objects.create(
+            title="فایل جهت بررسی پنل",
+            deal_type=Property.DEAL_SALE,
+            usage_type=Property.USAGE_RESIDENTIAL,
+            property_type=Property.PT_APARTMENT,
+            city="تهران",
+        )
+        response = self.client.get(reverse("admin:listings_property_changelist"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "آخرین ویرایش")
+        self.assertContains(response, 'property-status-select')
+
+    def test_sidebar_section_titles_are_plain_text_not_links(self):
+        response = self.client.get(reverse("admin:listings_property_changelist"))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn('<span class="section">فایل‌های ملکی</span>', content)
+        self.assertNotIn('<a href="" class="section">فایل‌های ملکی</a>', content)
+
+
+class EnhancedPropertySearchTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        Property.objects.create(
+            title="آپارتمان مناسب زعفرانیه",
+            deal_type=Property.DEAL_SALE,
+            usage_type=Property.USAGE_RESIDENTIAL,
+            property_type=Property.PT_APARTMENT,
+            province="تهران",
+            city="کرج",
+            neighborhood="زعفرانیه",
+            area=120,
+            bedrooms=3,
+            price=3_500_000_000,
+            status=Property.STATUS_ACTIVE,
+        )
+        Property.objects.create(
+            title="واحد اجاره‌ای مرکز شهر",
+            deal_type=Property.DEAL_RENT,
+            usage_type=Property.USAGE_RESIDENTIAL,
+            property_type=Property.PT_APARTMENT,
+            province="تهران",
+            city="تهران",
+            area=85,
+            bedrooms=2,
+            deposit=400_000_000,
+            rent=18_000_000,
+            status=Property.STATUS_ACTIVE,
+        )
+
+    def test_search_normalizes_arabic_letters_and_punctuation(self):
+        response = self.client.get(
+            reverse("listings:list"),
+            {"q": "كرج، زعفرانيه"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["count"], 1)
+        self.assertContains(response, "آپارتمان مناسب زعفرانیه")
+
+    def test_numeric_search_term_can_match_exact_area(self):
+        response = self.client.get(
+            reverse("listings:list"),
+            {"q": "زعفرانیه ۱۲۰"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["count"], 1)
+
+    def test_area_range_filters_are_visible_and_combined(self):
+        response = self.client.get(
+            reverse("listings:list"),
+            {"min_area": "۱۰۰", "max_area": "۱۳۰"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["count"], 1)
+        self.assertContains(response, 'name="min_area"')
+        self.assertContains(response, 'name="max_area"')
+
+    def test_price_sort_without_deal_type_falls_back_to_newest(self):
+        response = self.client.get(
+            reverse("listings:list"),
+            {"sort": "price_asc"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["sort"], "newest")
+        self.assertEqual(response.context["count"], 2)

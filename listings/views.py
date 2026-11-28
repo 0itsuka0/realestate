@@ -1,6 +1,9 @@
 from django.contrib import admin, messages
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
+import re
+import unicodedata
+
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -30,6 +33,64 @@ def _to_int(value):
     return number if number >= 0 else None
 
 
+
+_SEARCH_TEXT_TRANSLATION = str.maketrans({
+    "ي": "ی",
+    "ى": "ی",
+    "ك": "ک",
+    "\u200c": " ",
+    "\u200e": "",
+    "\u200f": "",
+    "ـ": "",
+})
+_SEARCH_STOP_WORDS = {"و", "در", "به", "از", "با", "برای", "که"}
+MAX_SEARCH_QUERY_LENGTH = 120
+MAX_SEARCH_TERMS = 8
+
+
+def _normalize_search_text(value):
+    """Normalize common Arabic/Persian keyboard differences and invisible marks."""
+    normalized = unicodedata.normalize("NFKC", _normalize_digits(value))
+    normalized = normalized.translate(_SEARCH_TEXT_TRANSLATION)
+    normalized = "".join(
+        char for char in normalized
+        if unicodedata.category(char) != "Mn"
+    )
+    return " ".join(normalized.split())
+
+
+def _search_terms(value):
+    """Return a bounded list of distinct, punctuation-free search terms."""
+    tokens = re.findall(r"[^\W_]+", _normalize_search_text(value), flags=re.UNICODE)
+    return list(dict.fromkeys(
+        token for token in tokens
+        if token and token not in _SEARCH_STOP_WORDS
+    ))[:MAX_SEARCH_TERMS]
+
+
+def _search_term_variants(term):
+    """Match records saved with either Persian or Arabic Yeh/Kaf characters."""
+    variants = {term}
+    for persian_char, arabic_char in (("ی", "ي"), ("ک", "ك")):
+        for variant in tuple(variants):
+            if persian_char in variant:
+                variants.add(variant.replace(persian_char, arabic_char))
+    return variants
+
+
+def _search_term_query(term, searchable_fields):
+    query = Q()
+    for field_name in searchable_fields:
+        for variant in _search_term_variants(term):
+            query |= Q(**{f"{field_name}__icontains": variant})
+
+    # Numeric terms can also identify an exact area, bedroom count or build year.
+    if term.isdecimal() and len(term) <= 6:
+        number = int(term)
+        query |= Q(area=number) | Q(bedrooms=number) | Q(year_built=number)
+    return query
+
+
 def _apply_range(queryset, field_name, minimum, maximum):
     if minimum is not None and maximum is not None and minimum > maximum:
         minimum, maximum = maximum, minimum
@@ -45,17 +106,15 @@ def property_list(request):
         status=Property.STATUS_ACTIVE
     ).prefetch_related("images")
 
-    # Tokenized search: every term must match at least one searchable field.
-    search_query = _normalize_digits(request.GET.get("q", "")).strip()[:120]
+    # Every distinct word must match at least one searchable field. Normalized
+    # variants make Persian/Arabic keyboards and punctuation less fragile.
+    search_query = request.GET.get("q", "")[:MAX_SEARCH_QUERY_LENGTH]
     searchable_fields = (
         "title", "province", "city", "neighborhood",
         "address", "description", "phone",
     )
-    for term in search_query.split():
-        term_query = Q()
-        for field in searchable_fields:
-            term_query |= Q(**{f"{field}__icontains": term})
-        queryset = queryset.filter(term_query)
+    for term in _search_terms(search_query):
+        queryset = queryset.filter(_search_term_query(term, searchable_fields))
 
     valid_deal_types = {value for value, _ in Property.DEAL_CHOICES}
     valid_usage_types = {value for value, _ in Property.USAGE_CHOICES}
@@ -128,7 +187,9 @@ def property_list(request):
     sort = request.GET.get("sort", "newest").strip()
     if sort == "oldest":
         queryset = queryset.order_by("created_at")
-    elif sort in {"price_asc", "price_desc"}:
+    elif sort in {"price_asc", "price_desc"} and deal_type in {
+        Property.DEAL_SALE, Property.DEAL_RENT
+    }:
         direction = "" if sort == "price_asc" else "-"
         if deal_type == Property.DEAL_RENT:
             queryset = queryset.order_by(

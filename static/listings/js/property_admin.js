@@ -20,4 +20,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
     dealSelect.addEventListener('change', toggle);
     toggle();
+
+    // Apply semantic colors to the selected status on list and edit forms.
+    var statusSelects = document.querySelectorAll('select.property-status-select');
+    var statusClasses = [
+        'status-active',
+        'status-suspended',
+        'status-sold',
+        'status-cancelled'
+    ];
+
+    function updateStatusColor(select) {
+        statusClasses.forEach(function (name) { select.classList.remove(name); });
+        var statusClass = 'status-' + select.value;
+        if (statusClasses.indexOf(statusClass) !== -1) {
+            select.classList.add(statusClass);
+        }
+    }
+
+    statusSelects.forEach(function (select) {
+        updateStatusColor(select);
+        select.addEventListener('change', function () {
+            updateStatusColor(select);
+        });
+    });
 });

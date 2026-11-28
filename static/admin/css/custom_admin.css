@@ -692,3 +692,193 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--admin-brand); 
     .owner-account-card { padding: 17px; }
     .owner-account-grid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
 }
+
+
+/* ---------- Refined admin sidebar and accessible action colors ---------- */
+:root { --admin-button-ink: #fff; }
+html[data-theme="dark"] { --admin-button-ink: #2b2031; }
+@media (prefers-color-scheme: dark) {
+    html[data-theme="auto"] { --admin-button-ink: #2b2031; }
+}
+
+/* Account actions remain clearly visible in the light theme. */
+.owner-account-actions .button.button-primary,
+.owner-account-actions a.button.button-primary,
+.owner-account-actions a.button.button-primary:visited {
+    background: var(--admin-brand) !important;
+    border: 1px solid var(--admin-brand) !important;
+    color: var(--admin-button-ink) !important;
+}
+.owner-account-actions .button.button-primary:hover,
+.owner-account-actions a.button.button-primary:hover {
+    background: var(--admin-brand-hover) !important;
+    border-color: var(--admin-brand-hover) !important;
+    color: var(--admin-button-ink) !important;
+}
+
+/* Keep the Search and Run actions legible in both color schemes. */
+#toolbar input[type="submit"],
+#toolbar button,
+#changelist .actions button,
+#changelist .actions input[type="submit"],
+#changelist .actions .button {
+    min-height: 36px;
+    padding: 7px 14px;
+    border: 1px solid transparent !important;
+    border-radius: 8px;
+    background: var(--admin-brand) !important;
+    color: var(--admin-button-ink) !important;
+    font-family: inherit;
+    font-size: .76rem;
+    font-weight: 700;
+    line-height: 1.5;
+    cursor: pointer;
+}
+#toolbar input[type="submit"]:hover,
+#toolbar button:hover,
+#changelist .actions button:hover,
+#changelist .actions input[type="submit"]:hover,
+#changelist .actions .button:hover {
+    background: var(--admin-brand-hover) !important;
+    color: var(--admin-button-ink) !important;
+}
+#toolbar input[type="submit"]:focus-visible,
+#changelist .actions button:focus-visible {
+    outline: 3px solid var(--admin-brand-soft);
+    outline-offset: 2px;
+}
+
+/* A compact, aligned sidebar with distinct, non-interactive section titles. */
+#nav-sidebar {
+    width: 268px;
+    min-width: 268px;
+    flex: 0 0 268px;
+    box-sizing: border-box;
+    padding: 14px 12px 20px;
+    background: var(--admin-surface);
+    border-left: 1px solid var(--admin-line);
+    border-right: 0;
+}
+#nav-sidebar .app-list { padding: 0; }
+#nav-sidebar .module {
+    margin: 0 0 11px;
+    border: 1px solid var(--admin-line);
+    border-radius: 12px;
+    background: var(--admin-surface);
+    box-shadow: none;
+    overflow: hidden;
+}
+#nav-sidebar .module table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+#nav-sidebar .module caption {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: right;
+}
+#nav-sidebar .module caption .section {
+    display: block;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--admin-line);
+    background: var(--admin-surface-soft);
+    color: var(--admin-ink);
+    font-size: .78rem;
+    font-weight: 700;
+    line-height: 1.6;
+    cursor: default;
+    text-decoration: none;
+}
+#nav-sidebar .module th {
+    width: auto;
+    padding: 3px 8px 3px 5px;
+    text-align: right;
+    font-size: .76rem;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+#nav-sidebar .module th a {
+    display: block;
+    padding: 7px 9px;
+    border-radius: 8px;
+    color: var(--admin-muted);
+    line-height: 1.55;
+    text-decoration: none;
+    transition: color .15s ease, background .15s ease;
+}
+#nav-sidebar .module th a:hover {
+    color: var(--admin-brand);
+    background: var(--admin-row-hover);
+}
+#nav-sidebar .module td {
+    width: 34px;
+    padding: 2px 5px;
+    text-align: center;
+}
+#nav-sidebar .module td a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    min-height: 24px;
+    border-radius: 7px;
+}
+#nav-sidebar .module tr:not(:last-child) th,
+#nav-sidebar .module tr:not(:last-child) td {
+    border-bottom: 1px solid var(--admin-line);
+}
+#nav-sidebar .module tr.current-model th a {
+    color: var(--admin-brand);
+    background: var(--admin-brand-soft);
+    font-weight: 700;
+}
+#nav-sidebar .module tr.current-model td {
+    background: var(--admin-brand-soft);
+}
+
+/* Color the editable property status according to its selected value. */
+#result_list select.property-status-select,
+.form-row select.property-status-select {
+    min-width: 112px;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 8px;
+    padding: 6px 9px;
+    font-weight: 700;
+}
+.property-status-select.status-active {
+    color: var(--admin-success) !important;
+    background: var(--admin-success-bg) !important;
+    border-color: color-mix(in srgb, var(--admin-success) 42%, var(--admin-line)) !important;
+}
+.property-status-select.status-suspended {
+    color: var(--admin-warning) !important;
+    background: var(--admin-warning-bg) !important;
+    border-color: color-mix(in srgb, var(--admin-warning) 42%, var(--admin-line)) !important;
+}
+.property-status-select.status-sold {
+    color: var(--admin-info) !important;
+    background: var(--admin-info-bg) !important;
+    border-color: color-mix(in srgb, var(--admin-info) 42%, var(--admin-line)) !important;
+}
+.property-status-select.status-cancelled {
+    color: var(--admin-danger) !important;
+    background: var(--admin-danger-bg) !important;
+    border-color: color-mix(in srgb, var(--admin-danger) 42%, var(--admin-line)) !important;
+}
+.property-status-select option[value="active"] { color: #16845b; background: #e7f7ee; }
+.property-status-select option[value="suspended"] { color: #8a641c; background: #fff8e8; }
+.property-status-select option[value="sold"] { color: #2459a6; background: #eaf2ff; }
+.property-status-select option[value="cancelled"] { color: #b52e40; background: #fff0f1; }
+
+@media (max-width: 767px) {
+    #nav-sidebar {
+        width: min(100%, 320px);
+        min-width: 0;
+        flex-basis: min(100%, 320px);
+        padding: 10px;
+    }
+}

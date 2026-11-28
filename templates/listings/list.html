@@ -39,10 +39,11 @@
                 <span aria-hidden="true">⌕</span>
                 <input id="property-search-q" type="search" name="q"
                        value="{{ filters.q|default:'' }}" class="form-control"
-                       placeholder="عنوان، استان، شهر، محله، آدرس یا شماره تماس..."
+                       placeholder="عنوان، شهر، محله، آدرس یا شماره تماس..."
+                       maxlength="120" aria-describedby="property-search-help"
                        autocomplete="off">
             </div>
-            <small>می‌توانید چند کلمه وارد کنید؛ همهٔ عبارت‌ها در اطلاعات فایل بررسی می‌شوند.</small>
+            <small id="property-search-help">واژه‌ها را با فاصله جدا کنید؛ همهٔ واژه‌ها باید در اطلاعات فایل وجود داشته باشند. حداکثر ۸ واژهٔ یکتا بررسی می‌شود.</small>
         </div>
             </div>
         </details>
@@ -182,9 +183,21 @@
                         <select id="filter-sort" name="sort" class="form-select">
                             <option value="newest" {% if sort == 'newest' %}selected{% endif %}>جدیدترین فایل‌ها</option>
                             <option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>قدیمی‌ترین فایل‌ها</option>
-                            <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>قیمت از کم به زیاد</option>
-                            <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>قیمت از زیاد به کم</option>
+                            <option value="price_asc" {% if not filters.deal_type %}disabled{% endif %} {% if sort == 'price_asc' %}selected{% endif %}>قیمت از کم به زیاد</option>
+                            <option value="price_desc" {% if not filters.deal_type %}disabled{% endif %} {% if sort == 'price_desc' %}selected{% endif %}>قیمت از زیاد به کم</option>
                         </select>
+                    </div>
+                </div>
+                <div class="advanced-control-grid advanced-area-grid">
+                    <div class="search-field">
+                        <label for="filter-min-area">حداقل متراژ (متر مربع)</label>
+                        <input id="filter-min-area" type="text" inputmode="numeric" name="min_area"
+                               value="{{ filters.min_area|default:'' }}" class="form-control" placeholder="مثلاً ۷۰">
+                    </div>
+                    <div class="search-field">
+                        <label for="filter-max-area">حداکثر متراژ (متر مربع)</label>
+                        <input id="filter-max-area" type="text" inputmode="numeric" name="max_area"
+                               value="{{ filters.max_area|default:'' }}" class="form-control" placeholder="مثلاً ۱۵۰">
                     </div>
                 </div>
                 <div class="amenity-filter-list">
@@ -327,14 +340,37 @@
     const saleFields = document.getElementById("sale-price-fields");
     const rentFields = document.getElementById("rent-price-fields");
     const hint = document.getElementById("price-filter-hint");
+    const sortSelect = document.getElementById("filter-sort");
 
     if (!dealSelect || !saleFields || !rentFields || !hint) return;
 
+    function setInputsDisabled(container, disabled) {
+        container.querySelectorAll("input").forEach(function (input) {
+            input.disabled = disabled;
+        });
+    }
+
     function updatePriceFields() {
         const value = dealSelect.value;
-        saleFields.hidden = value !== "sale";
-        rentFields.hidden = value !== "rent";
+        const isSale = value === "sale";
+        const isRent = value === "rent";
+        saleFields.hidden = !isSale;
+        rentFields.hidden = !isRent;
+        setInputsDisabled(saleFields, !isSale);
+        setInputsDisabled(rentFields, !isRent);
         hint.hidden = Boolean(value);
+
+        if (sortSelect) {
+            const priceSortOptions = sortSelect.querySelectorAll(
+                'option[value="price_asc"], option[value="price_desc"]'
+            );
+            priceSortOptions.forEach(function (option) {
+                option.disabled = !value;
+            });
+            if (!value && (sortSelect.value === "price_asc" || sortSelect.value === "price_desc")) {
+                sortSelect.value = "newest";
+            }
+        }
     }
 
     dealSelect.addEventListener("change", updatePriceFields);

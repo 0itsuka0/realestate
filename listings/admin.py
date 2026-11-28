@@ -49,7 +49,7 @@ class PropertyVideoInline(admin.TabularInline):
 class PropertyAdmin(admin.ModelAdmin):
     list_display = (
         'title', 'deal_type', 'usage_type', 'property_type', 'city',
-        'status', 'is_featured', 'created_at',
+        'status', 'is_featured', 'created_at', 'updated_at',
     )
     list_filter = ('status', 'deal_type', 'usage_type', 'property_type', 'province', 'city', 'is_featured')
     search_fields = ('title', 'city', 'neighborhood', 'address', 'description')
@@ -70,6 +70,15 @@ class PropertyAdmin(admin.ModelAdmin):
         ('قیمت — اجاره', {'fields': ('deposit', 'rent', 'is_convertible'), 'classes': ('rent-price-group',)}),
         ('تماس و توضیحات', {'fields': ('phone', 'description')}),
     )
+
+    def formfield_for_choice_field(self, db_field, request, **kwargs):
+        formfield = super().formfield_for_choice_field(db_field, request, **kwargs)
+        if db_field.name == 'status' and formfield is not None:
+            classes = formfield.widget.attrs.get('class', '').split()
+            if 'property-status-select' not in classes:
+                classes.append('property-status-select')
+            formfield.widget.attrs['class'] = ' '.join(classes)
+        return formfield
 
     class Media:
         js = ('listings/js/property_admin.js',)
